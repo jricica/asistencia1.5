@@ -140,7 +140,7 @@ export function AppSidebar() {
     }
   };
 
-  const item = {
+  const itemVariants = {
     hidden: { opacity: 0, x: -20 },
     show: { opacity: 1, x: 0 }
   };
@@ -165,23 +165,27 @@ export function AppSidebar() {
                 animate="show"
                 className="space-y-1"
               >
-                {menuItems.map((item, index) => (
-                  <motion.div key={item.title} variants={item}>
+                {menuItems.map((menuItem) => (
+                  <motion.div key={menuItem.title} variants={itemVariants}>
                     <SidebarMenuItem>
-                      <SidebarMenuButton 
+                      <SidebarMenuButton
                         asChild
-                        active={location.pathname === item.url}
+                        isActive={location.pathname === menuItem.url}
                         className={cn(
                           "transition-all duration-200 hover:bg-muted",
-                          location.pathname === item.url && "bg-primary/10 text-primary font-medium"
+                          location.pathname === menuItem.url &&
+                            "bg-primary/10 text-primary font-medium"
                         )}
                       >
-                        <Link to={item.url} className="flex items-center">
-                          <item.icon className={cn(
-                            "mr-2 h-4 w-4",
-                            location.pathname === item.url ? "text-primary" : "text-muted-foreground"
+                        <Link to={menuItem.url} className="flex items-center">
+                          <menuItem.icon
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              location.pathname === menuItem.url
+                                ? "text-primary"
+                                : "text-muted-foreground"
                           )} />
-                          <span>{item.title}</span>
+                          <span>{menuItem.title}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
