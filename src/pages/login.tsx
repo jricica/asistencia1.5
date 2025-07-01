@@ -80,7 +80,7 @@ export default function LoginForm() {
               title: "Success",
               description: "You have been signed in successfully.",
             });
-            navigate("/");
+            navigate("/dashboard");
           },
           onError: (ctx) => {
             toast({
