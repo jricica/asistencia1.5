@@ -23,10 +23,11 @@ const Dashboard = () => {
     const fetchUserRole = async () => {
       if (session?.user) {
         try {
-          const users = await fine.table("users")
+          const { data: users } = await fine
+            .table("users")
             .select("role")
             .eq("email", session.user.email);
-          
+
           if (users && users.length > 0) {
             setUserRole(users[0].role);
           }

@@ -46,10 +46,11 @@ export function Header({ toggleSidebar }) {
       // For now, we'll simulate getting it from the database
       const getUserRole = async () => {
         try {
-          const users = await fine.table("users")
+          const { data: users } = await fine
+            .table("users")
             .select("role")
             .eq("email", session.user.email);
-          
+
           if (users && users.length > 0) {
             setUserRole(users[0].role);
           }
