@@ -53,18 +53,18 @@ createRoot(document.getElementById("root")!).render(
               <Route path="/dashboard" element={<ProtectedRoute Component={Dashboard} />} />
               <Route path="/profile" element={<ProtectedRoute Component={Profile} />} />
 
-              {/* Admin */}
-              <Route path="/admin/teachers" element={<ProtectedRoute Component={AdminTeachers} />} />
-              <Route path="/admin/levels" element={<ProtectedRoute Component={AdminLevels} />} />
-              <Route path="/admin/projections" element={<ProtectedRoute Component={AdminProjections} />} />
-              <Route path="/admin/settings" element={<ProtectedRoute Component={AdminSettings} />} />
+              {/* Admin Routes */}
+              <Route path="/admin/teachers" element={<ProtectedRoute Component={AdminTeachers} allowedRoles={["admin"]} />} />
+              <Route path="/admin/levels" element={<ProtectedRoute Component={AdminLevels} allowedRoles={["admin"]} />} />
+              <Route path="/admin/projections" element={<ProtectedRoute Component={AdminProjections} allowedRoles={["admin"]} />} />
+              <Route path="/admin/settings" element={<ProtectedRoute Component={AdminSettings} allowedRoles={["admin"]} />} />
 
-              {/* Teacher */}
-              <Route path="/teacher/grades" element={<ProtectedRoute Component={TeacherGrades} />} />
-              <Route path="/teacher/students" element={<ProtectedRoute Component={TeacherStudents} />} />
-              <Route path="/teacher/attendance" element={<ProtectedRoute Component={TeacherAttendance} />} />
-              <Route path="/teacher/reports" element={<ProtectedRoute Component={TeacherReports} />} />
-              <Route path="/teacher/projections" element={<ProtectedRoute Component={TeacherProjections} />} />
+              {/* Teacher Routes */}
+              <Route path="/teacher/grades" element={<ProtectedRoute Component={TeacherGrades} allowedRoles={["teacher"]} />} />
+              <Route path="/teacher/students" element={<ProtectedRoute Component={TeacherStudents} allowedRoles={["teacher"]} />} />
+              <Route path="/teacher/attendance" element={<ProtectedRoute Component={TeacherAttendance} allowedRoles={["teacher"]} />} />
+              <Route path="/teacher/reports" element={<ProtectedRoute Component={TeacherReports} allowedRoles={["teacher"]} />} />
+              <Route path="/teacher/projections" element={<ProtectedRoute Component={TeacherProjections} allowedRoles={["teacher"]} />} />
             </Routes>
           </BrowserRouter>
           <Sonner />
