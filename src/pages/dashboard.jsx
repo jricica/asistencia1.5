@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { motion } from "framer-motion";
 import { Loader2, Users, ClipboardCheck, AlertTriangle, TrendingUp, Calendar } from "lucide-react";
-import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { DashboardLayout } from "@/components/layout/Dashboard";
 
 const Dashboard = () => {
   const { data: session } = fine.auth.useSession();
