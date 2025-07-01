@@ -8,12 +8,12 @@ import { motion } from "framer-motion";
 import { Loader2, Users, ClipboardCheck, AlertTriangle, TrendingUp, Calendar } from "lucide-react";
 
 const Dashboard = () => {
-  const { data: session } = fine.auth.useSession();
+  const { data: session, isPending } = fine.auth.useSession();
   const [userRole, setUserRole] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Prevent rendering if session is undefined (avoid blank page)
-  if (typeof session === "undefined") {
+  // Show a loader while the session is being fetched
+  if (isPending) {
     return (
       <DashboardLayout>
         <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
