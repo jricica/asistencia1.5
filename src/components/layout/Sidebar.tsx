@@ -48,3 +48,5 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+
+export { Sidebar };
