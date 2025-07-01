@@ -11,6 +11,21 @@ const Dashboard = () => {
   const { data: session } = fine.auth.useSession();
   const [userRole, setUserRole] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Prevent rendering if session is undefined (avoid blank page)
+  if (typeof session === "undefined") {
+    return (
+      <DashboardLayout>
+        <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
+            <h3 className="text-lg font-medium">Loading dashboard...</h3>
+            <p className="text-muted-foreground">Please wait while we fetch your data</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
   const [stats, setStats] = useState({
     attendanceByLevel: [],
     teacherCompliance: [],
