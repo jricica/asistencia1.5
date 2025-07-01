@@ -1,31 +1,16 @@
 import { useState, useEffect } from "react";
 import { fine } from "@/lib/fine";
-import { DashboardLayout } from "@/components/layout/Dashboard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { motion } from "framer-motion";
 import { Loader2, Users, ClipboardCheck, AlertTriangle, TrendingUp, Calendar } from "lucide-react";
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
 
 const Dashboard = () => {
-  const { data: session, isPending } = fine.auth.useSession();
+  const { data: session } = fine.auth.useSession();
   const [userRole, setUserRole] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  // Show a loader while the session is being fetched
-  if (isPending) {
-    return (
-      <DashboardLayout>
-        <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
-          <div className="text-center">
-            <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
-            <h3 className="text-lg font-medium">Loading dashboard...</h3>
-            <p className="text-muted-foreground">Please wait while we fetch your data</p>
-          </div>
-        </div>
-      </DashboardLayout>
-    );
-  }
   const [stats, setStats] = useState({
     attendanceByLevel: [],
     teacherCompliance: [],
