@@ -1,9 +1,18 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { fine } from "@/lib/fine";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
 const Index = () => {
   const navigate = useNavigate();
+
+
+  useEffect(() => {
+    if (!isPending && session) {
+      navigate("/dashboard");
+    }
+  }, [session, isPending, navigate]);
 
   return (
     <main className="w-full min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-background to-blue-50 dark:from-background dark:to-blue-950/20 text-foreground p-4">
@@ -23,8 +32,22 @@ const Index = () => {
             </p>
           </div>
           
-          <div className="pt-4">
-            <Button size="lg" className="text-lg" onClick={() => navigate("/dashboard")}>Enter Dashboard</Button>
+          <div className="flex flex-col sm:flex-row gap-4 pt-4">
+            <Button 
+              size="lg" 
+              className="text-lg"
+              onClick={() => navigate("/login")}
+            >
+              Sign In
+            </Button>
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="text-lg"
+              onClick={() => navigate("/signup")}
+            >
+              Create Account
+            </Button>
           </div>
           
           <div className="pt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
