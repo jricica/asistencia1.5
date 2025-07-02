@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { fine } from "@/lib/fine";
-import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { DashboardLayout } from "@/components/layout/Dashboard";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +13,7 @@ const TeacherGrades = () => {
   const [grades, setGrades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [teacherLevel, setTeacherLevel] = useState(null);
+  const { data: session } = fine.auth.useSession();
   const { toast } = useToast();
 
   useEffect(() => {

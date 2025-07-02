@@ -11,12 +11,12 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { 
-  Home, 
-  Users, 
-  BookOpen, 
-  ClipboardCheck, 
-  BarChart2, 
+import {
+  Home,
+  Users,
+  BookOpen,
+  ClipboardCheck,
+  BarChart2,
   Settings,
   Mail,
   School,
@@ -35,8 +35,6 @@ export function AppSidebar() {
 
   useEffect(() => {
     if (session?.user) {
-      // In a real app, you'd get the role from the session
-      // For now, we'll simulate getting it from the database
       const getUserRole = async () => {
         try {
           const users = await fine.table("users")
@@ -48,82 +46,35 @@ export function AppSidebar() {
           }
         } catch (error) {
           console.error("Error fetching user role:", error);
-          // Default to teacher if there's an error
           setUserRole("teacher");
         }
       };
-      
       getUserRole();
     }
   }, [session]);
 
-  // Define menu items based on user role
   const getMenuItems = () => {
     const baseItems = [
-      {
-        title: "Dashboard",
-        url: "/dashboard",
-        icon: Home,
-      }
+      { title: "Dashboard", url: "/dashboard", icon: Home }
     ];
 
     const adminItems = [
-      {
-        title: "Teachers",
-        url: "/admin/teachers",
-        icon: UserCog,
-      },
-      {
-        title: "Levels & Grades",
-        url: "/admin/levels",
-        icon: Layers,
-      },
-      {
-        title: "Projections",
-        url: "/admin/projections",
-        icon: BarChart2,
-      },
-      {
-        title: "Settings",
-        url: "/admin/settings",
-        icon: Settings,
-      }
+      { title: "Teachers", url: "/admin/teachers", icon: UserCog },
+      { title: "Levels & Grades", url: "/admin/levels", icon: Layers },
+      { title: "Projections", url: "/admin/projections", icon: BarChart2 },
+      { title: "Settings", url: "/admin/settings", icon: Settings },
     ];
 
     const teacherItems = [
-      {
-        title: "Grades",
-        url: "/teacher/grades",
-        icon: BookOpen,
-      },
-      {
-        title: "Students",
-        url: "/teacher/students",
-        icon: GraduationCap,
-      },
-      {
-        title: "Attendance",
-        url: "/teacher/attendance",
-        icon: ClipboardCheck,
-      },
-      {
-        title: "Reports",
-        url: "/teacher/reports",
-        icon: FileText,
-      },
-      {
-        title: "Projections",
-        url: "/teacher/projections",
-        icon: BarChart2,
-      }
+      { title: "Grades", url: "/teacher/grades", icon: BookOpen },
+      { title: "Students", url: "/teacher/students", icon: GraduationCap },
+      { title: "Attendance", url: "/teacher/attendance", icon: ClipboardCheck },
+      { title: "Reports", url: "/teacher/reports", icon: FileText },
+      { title: "Projections", url: "/teacher/projections", icon: BarChart2 },
     ];
 
-    if (userRole === "admin") {
-      return [...baseItems, ...adminItems];
-    } else if (userRole === "teacher") {
-      return [...baseItems, ...teacherItems];
-    }
-
+    if (userRole === "admin") return [...baseItems, ...adminItems];
+    if (userRole === "teacher") return [...baseItems, ...teacherItems];
     return baseItems;
   };
 
@@ -133,10 +84,7 @@ export function AppSidebar() {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.3
-      }
+      transition: { staggerChildren: 0.1, delayChildren: 0.3 }
     }
   };
 
@@ -152,7 +100,7 @@ export function AppSidebar() {
           <School className="h-6 w-6 text-primary" />
           <span className="font-bold text-lg">School System</span>
         </div>
-        
+
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-medium text-muted-foreground">
             {userRole === "admin" ? "ADMINISTRATION" : "NAVIGATION"}
@@ -165,23 +113,27 @@ export function AppSidebar() {
                 animate="show"
                 className="space-y-1"
               >
-                {menuItems.map((item, index) => (
-                  <motion.div key={item.title} variants={item}>
+                {menuItems.map((itemData) => (
+                  <motion.div key={itemData.title} variants={item}>
                     <SidebarMenuItem>
-                      <SidebarMenuButton 
+                      <SidebarMenuButton
                         asChild
-                        active={location.pathname === item.url}
                         className={cn(
                           "transition-all duration-200 hover:bg-muted",
-                          location.pathname === item.url && "bg-primary/10 text-primary font-medium"
+                          location.pathname === itemData.url &&
+                            "bg-primary/10 text-primary font-medium"
                         )}
                       >
-                        <Link to={item.url} className="flex items-center">
-                          <item.icon className={cn(
-                            "mr-2 h-4 w-4",
-                            location.pathname === item.url ? "text-primary" : "text-muted-foreground"
-                          )} />
-                          <span>{item.title}</span>
+                        <Link to={itemData.url} className="flex items-center">
+                          <itemData.icon
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              location.pathname === itemData.url
+                                ? "text-primary"
+                                : "text-muted-foreground"
+                            )}
+                          />
+                          <span>{itemData.title}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -191,7 +143,7 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        
+
         {userRole && (
           <div className="mt-auto px-4 py-4">
             <div className="rounded-lg bg-primary/10 p-4">
@@ -200,17 +152,18 @@ export function AppSidebar() {
                   {userRole === "admin" ? "A" : "T"}
                 </div>
                 <div>
-                  <p className="text-sm font-medium">{userRole === "admin" ? "Admin" : "Teacher"} Mode</p>
+                  <p className="text-sm font-medium">
+                    {userRole === "admin" ? "Admin" : "Teacher"} Mode
+                  </p>
                   <p className="text-xs text-muted-foreground">
                     {userRole === "admin" ? "Full access" : "Limited access"}
                   </p>
                 </div>
               </div>
               <div className="text-xs text-muted-foreground">
-                {userRole === "admin" 
-                  ? "You have full administrative privileges" 
-                  : "You can manage grades and students"
-                }
+                {userRole === "admin"
+                  ? "You have full administrative privileges"
+                  : "You can manage grades and students"}
               </div>
             </div>
           </div>

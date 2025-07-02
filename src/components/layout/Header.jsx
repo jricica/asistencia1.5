@@ -28,7 +28,7 @@ import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 
 export function Header({ toggleSidebar }) {
-
+  const { data: session } = fine.auth.useSession();
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
   const [userRole, setUserRole] = useState(null);
@@ -46,16 +46,16 @@ export function Header({ toggleSidebar }) {
       // For now, we'll simulate getting it from the database
       const getUserRole = async () => {
         try {
-          const { data: users } = await fine
-            .table("users")
+          const users = await fine.table("users")
             .select("role")
             .eq("email", session.user.email);
-
+          
           if (users && users.length > 0) {
             setUserRole(users[0].role);
           }
         } catch (error) {
           console.error("Error fetching user role:", error);
+          // Default to teacher if there's an error
           setUserRole("teacher");
         }
       };
