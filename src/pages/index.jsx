@@ -1,18 +1,17 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { fine } from "@/lib/fine";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
 const Index = () => {
   const navigate = useNavigate();
-  
 
   useEffect(() => {
-    if (!isPending && session) {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
       navigate("/dashboard");
     }
-  }, [session, isPending, navigate]);
+  }, [navigate]);
 
   return (
     <main className="w-full min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-background to-blue-50 dark:from-background dark:to-blue-950/20 text-foreground p-4">
