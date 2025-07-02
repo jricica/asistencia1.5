@@ -1,24 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { fine } from "@/lib/fine";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
 import { 
-  Menu, 
-  User, 
-  LogOut, 
-  Settings, 
-  Bell, 
-  Moon, 
-  Sun, 
+  Menu,
+  Bell,
+  Moon,
+  Sun,
   School,
   Search
 } from "lucide-react";
@@ -31,7 +19,6 @@ export function Header({ toggleSidebar }) {
 
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
-  const [userRole, setUserRole] = useState(null);
   const { theme, setTheme } = useTheme();
   const [notifications, setNotifications] = useState([
     { id: 1, message: "New student added to Grade 3", time: "5 min ago" },
@@ -40,38 +27,7 @@ export function Header({ toggleSidebar }) {
   ]);
   const [showNotifications, setShowNotifications] = useState(false);
 
-  useEffect(() => {
-    if (session?.user) {
-      // In a real app, you'd get the role from the session
-      // For now, we'll simulate getting it from the database
-      const getUserRole = async () => {
-        try {
-          const { data: users } = await fine
-            .table("users")
-            .select("role")
-            .eq("email", session.user.email);
-
-          if (users && users.length > 0) {
-            setUserRole(users[0].role);
-          }
-        } catch (error) {
-          console.error("Error fetching user role:", error);
-          // Default to teacher if there's an error
-          setUserRole("teacher");
-        }
-      };
-      
-      getUserRole();
-    }
-  }, [session]);
-
-  const userInitials = session?.user?.name
-    ? session.user.name
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-    : "U";
+  
 
   return (
     <motion.header 
@@ -160,51 +116,6 @@ export function Header({ toggleSidebar }) {
           )}
         </div>
         
-        {session?.user && (
-          <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-                <Avatar className="h-9 w-9 border-2 border-primary/20">
-                  <AvatarImage src={session.user.image || ""} alt={session.user.name} />
-                  <AvatarFallback className="bg-primary/10 text-primary">{userInitials}</AvatarFallback>
-                </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
-              <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">{session.user.name}</p>
-                  <p className="text-xs leading-none text-muted-foreground">{session.user.email}</p>
-                  {userRole && (
-                    <Badge variant="outline" className="mt-1 w-fit">
-                      {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
-                    </Badge>
-                  )}
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link to="/profile" className="flex w-full cursor-pointer items-center">
-                  <User className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/admin/settings" className="flex w-full cursor-pointer items-center">
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link to="/logout" className="flex w-full cursor-pointer items-center text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
-                </Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
       </div>
     </motion.header>
   );

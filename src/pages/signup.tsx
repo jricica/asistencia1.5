@@ -108,9 +108,7 @@ export default function SignupForm() {
     }
   };
 
-  if (!fine) return <Navigate to='/' />;
-  
-  if (fine.auth.isAuthenticated) {
+  if (fine.auth.useSession().data) {
     return <Navigate to='/dashboard' replace />;
   }
 

@@ -94,9 +94,7 @@ export default function SignupForm() {
   }
 };
 
- const user = JSON.parse(localStorage.getItem("user") || "null");
-  if (user) return <Navigate to='/' />;
-
+ 
 
   return (
     <div className='container mx-auto flex h-screen items-center justify-center py-10'>

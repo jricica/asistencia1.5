@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { fine } from "@/lib/fine";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,7 +16,6 @@ const TeacherGrades = () => {
 
   useEffect(() => {
     const fetchTeacherData = async () => {
-      if (!session?.user) return;
       
       try {
         // In a real app, you would fetch the teacher's data from the database
@@ -52,7 +50,7 @@ const TeacherGrades = () => {
     };
 
     fetchTeacherData();
-  }, [session, toast]);
+  }, [toast]);
 
   const container = {
     hidden: { opacity: 0 },
