@@ -10,12 +10,7 @@ import "./index.css";
 
 // Pages
 import Index from "./pages";
-import LoginForm from "./pages/login";
-import SignupForm from "./pages/signup";
-import Logout from "./pages/logout";
 import Dashboard from "./pages/dashboard";
-import PasswordRecovery from "./pages/password-recovery";
-import Profile from "./pages/profile";
 
 // Admin Pages
 import AdminTeachers from "./pages/admin/teachers";
@@ -30,9 +25,6 @@ import TeacherAttendance from "./pages/teacher/attendance";
 import TeacherReports from "./pages/teacher/reports";
 import TeacherProjections from "./pages/teacher/projections";
 
-// Auth
-import { ProtectedRoute } from "./components/auth/route-components";
-
 const queryClient = new QueryClient();
 
 createRoot(document.getElementById("root")!).render(
@@ -44,27 +36,22 @@ createRoot(document.getElementById("root")!).render(
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<Index />} />
-              <Route path="/login" element={<LoginForm />} />
-              <Route path="/signup" element={<SignupForm />} />
-              <Route path="/logout" element={<Logout />} />
-              <Route path="/password-recovery" element={<PasswordRecovery />} />
 
               {/* Protected Routes */}
-              <Route path="/dashboard" element={<ProtectedRoute Component={Dashboard} />} />
-              <Route path="/profile" element={<ProtectedRoute Component={Profile} />} />
+              <Route path="/dashboard" element={<Dashboard />} />
 
               {/* Admin Routes */}
-              <Route path="/admin/teachers" element={<ProtectedRoute Component={AdminTeachers} allowedRoles={["admin"]} />} />
-              <Route path="/admin/levels" element={<ProtectedRoute Component={AdminLevels} allowedRoles={["admin"]} />} />
-              <Route path="/admin/projections" element={<ProtectedRoute Component={AdminProjections} allowedRoles={["admin"]} />} />
-              <Route path="/admin/settings" element={<ProtectedRoute Component={AdminSettings} allowedRoles={["admin"]} />} />
+              <Route path="/admin/teachers" element={<AdminTeachers />} />
+              <Route path="/admin/levels" element={<AdminLevels />} />
+              <Route path="/admin/projections" element={<AdminProjections />} />
+              <Route path="/admin/settings" element={<AdminSettings />} />
 
               {/* Teacher Routes */}
-              <Route path="/teacher/grades" element={<ProtectedRoute Component={TeacherGrades} allowedRoles={["teacher"]} />} />
-              <Route path="/teacher/students" element={<ProtectedRoute Component={TeacherStudents} allowedRoles={["teacher"]} />} />
-              <Route path="/teacher/attendance" element={<ProtectedRoute Component={TeacherAttendance} allowedRoles={["teacher"]} />} />
-              <Route path="/teacher/reports" element={<ProtectedRoute Component={TeacherReports} allowedRoles={["teacher"]} />} />
-              <Route path="/teacher/projections" element={<ProtectedRoute Component={TeacherProjections} allowedRoles={["teacher"]} />} />
+              <Route path="/teacher/grades" element={<TeacherGrades />} />
+              <Route path="/teacher/students" element={<TeacherStudents />} />
+              <Route path="/teacher/attendance" element={<TeacherAttendance />} />
+              <Route path="/teacher/reports" element={<TeacherReports />} />
+              <Route path="/teacher/projections" element={<TeacherProjections />} />
             </Routes>
           </BrowserRouter>
           <Sonner />
