@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { fine } from "@/lib/fine";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
@@ -7,6 +8,7 @@ import { Loader2, Users, ClipboardCheck, AlertTriangle, TrendingUp, Calendar } f
 import { DashboardLayout } from "@/components/layout/Dashboard";
 
 const Dashboard = () => {
+  const [userRole, setUserRole] = useState(null);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     attendanceByLevel: [],
@@ -17,6 +19,24 @@ const Dashboard = () => {
   });
 
   useEffect(() => {
+    const fetchUserRole = async () => {
+      if (session?.user) {
+        try {
+          const { data: users } = await fine
+            .table("users")
+            .select("role")
+            .eq("email", session.user.email);
+
+          if (users && users.length > 0) {
+            setUserRole(users[0].role);
+          }
+        } catch (error) {
+          console.error("Error fetching user role:", error);
+          setUserRole("teacher");
+        }
+      }
+    };
+
     const fetchDashboardData = async () => {
       try {
         // In a real app, you would fetch actual data from the database
@@ -80,8 +100,9 @@ const Dashboard = () => {
       }
     };
 
+    fetchUserRole();
     fetchDashboardData();
-  }, []);
+  }, [session]);
 
   const COLORS = ['#4ade80', '#f87171', '#facc15', '#60a5fa', '#c084fc'];
 
@@ -125,7 +146,7 @@ const Dashboard = () => {
         <motion.div variants={item}>
           <h1 className="text-3xl font-bold">Dashboard</h1>
           <p className="text-muted-foreground">
-            Welcome! Here's an overview of the attendance system.
+            Welcome back, <span className="font-medium text-foreground">{session?.user?.name}</span>! Here's an overview of the attendance system.
           </p>
         </motion.div>
 
@@ -134,7 +155,9 @@ const Dashboard = () => {
             <TabsList className="grid w-full grid-cols-3 md:w-auto md:inline-flex">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="attendance">Attendance</TabsTrigger>
-              <TabsTrigger value="compliance">Teacher Compliance</TabsTrigger>
+              {userRole === "admin" && (
+                <TabsTrigger value="compliance">Teacher Compliance</TabsTrigger>
+              )}
             </TabsList>
             
             <TabsContent value="overview" className="space-y-6 mt-6">
@@ -460,7 +483,8 @@ const Dashboard = () => {
               </div>
             </TabsContent>
             
-            <TabsContent value="compliance" className="space-y-6 mt-6">
+            {userRole === "admin" && (
+              <TabsContent value="compliance" className="space-y-6 mt-6">
                 <motion.div variants={item}>
                   <Card className="dashboard-card">
                     <CardHeader>
@@ -523,6 +547,7 @@ const Dashboard = () => {
                   ))}
                 </div>
               </TabsContent>
+            )}
           </Tabs>
         </motion.div>
       </motion.div>
