@@ -84,15 +84,9 @@ const handleSubmit = async (e: React.FormEvent) => {
   description: "You are now logged in.",
 });
 
-// Guardamos el usuario
-localStorage.setItem("user", JSON.stringify(data.user));
-window.location.href = "/dashboard";
-
-
-// Forzamos redirección después de un pequeño delay
-setTimeout(() => {
-  navigate("/dashboard");
-}, 100);
+  // Guardamos el usuario y redirigimos al dashboard
+  localStorage.setItem("user", JSON.stringify(data.user));
+  navigate("/dashboard", { replace: true });
 
     
   } catch (error: any) {
