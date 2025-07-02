@@ -29,6 +29,7 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 export function AppSidebar() {
+  const { data: session } = fine.auth.useSession();
   const location = useLocation();
   const [userRole, setUserRole] = useState(null);
 
@@ -38,11 +39,10 @@ export function AppSidebar() {
       // For now, we'll simulate getting it from the database
       const getUserRole = async () => {
         try {
-          const { data: users } = await fine
-            .table("users")
+          const users = await fine.table("users")
             .select("role")
             .eq("email", session.user.email);
-
+          
           if (users && users.length > 0) {
             setUserRole(users[0].role);
           }
@@ -140,7 +140,7 @@ export function AppSidebar() {
     }
   };
 
-  const itemVariants = {
+  const item = {
     hidden: { opacity: 0, x: -20 },
     show: { opacity: 1, x: 0 }
   };
@@ -165,27 +165,23 @@ export function AppSidebar() {
                 animate="show"
                 className="space-y-1"
               >
-                {menuItems.map((menuItem) => (
-                  <motion.div key={menuItem.title} variants={itemVariants}>
+                {menuItems.map((item, index) => (
+                  <motion.div key={item.title} variants={item}>
                     <SidebarMenuItem>
-                      <SidebarMenuButton
+                      <SidebarMenuButton 
                         asChild
-                        isActive={location.pathname === menuItem.url}
+                        active={location.pathname === item.url}
                         className={cn(
                           "transition-all duration-200 hover:bg-muted",
-                          location.pathname === menuItem.url &&
-                            "bg-primary/10 text-primary font-medium"
+                          location.pathname === item.url && "bg-primary/10 text-primary font-medium"
                         )}
                       >
-                        <Link to={menuItem.url} className="flex items-center">
-                          <menuItem.icon
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              location.pathname === menuItem.url
-                                ? "text-primary"
-                                : "text-muted-foreground"
+                        <Link to={item.url} className="flex items-center">
+                          <item.icon className={cn(
+                            "mr-2 h-4 w-4",
+                            location.pathname === item.url ? "text-primary" : "text-muted-foreground"
                           )} />
-                          <span>{menuItem.title}</span>
+                          <span>{item.title}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>

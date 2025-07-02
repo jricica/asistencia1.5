@@ -108,9 +108,9 @@ export default function SignupForm() {
     }
   };
 
-  if (fine.auth.useSession().data) {
-    return <Navigate to='/dashboard' replace />;
-  }
+  if (!fine) return <Navigate to='/' />;
+  const { isPending, data } = fine.auth.useSession();
+  if (!isPending && data) return <Navigate to='/' />;
 
   return (
     <div className='container mx-auto flex h-screen items-center justify-center py-10'>

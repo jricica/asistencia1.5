@@ -57,46 +57,58 @@ export default function SignupForm() {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  if (!validateForm()) return;
+    e.preventDefault();
 
-  setIsLoading(true);
+    if (!validateForm()) return;
 
-  try {
-    const res = await fetch("http://localhost:3000/api/signup", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(formData),
-    });
+    setIsLoading(true);
 
-    const data = await res.json();
+    try {
+      const { data, error } = await fine.auth.signUp.email(
+        {
+          email: formData.email,
+          password: formData.password,
+          name: formData.name,
+          callbackURL: "/",
+        },
+        {
+          onRequest: () => {
+            setIsLoading(true);
+          },
+          onSuccess: () => {
+            toast({
+              title: "Account created",
+              description: "Please check your email to verify your account.",
+            });
+            navigate("/login");
+          },
+          onError: (ctx) => {
+            toast({
+              title: "Error",
+              description: ctx.error.message,
+              variant: "destructive",
+            });
+          },
+        }
+      );
 
-    if (!res.ok) {
-      throw new Error(data.error || "Error al crear la cuenta");
+      if (error) {
+        throw error;
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    toast({
-      title: "Cuenta creada",
-      description: "Ahora podés iniciar sesión.",
-    });
-
-    navigate("/login");
-  } catch (error) {
-    toast({
-      title: "Error",
-      description: error.message,
-      variant: "destructive",
-    });
-  } finally {
-    setIsLoading(false);
-  }
-};
-
- const user = JSON.parse(localStorage.getItem("user") || "null");
-  if (user) return <Navigate to='/' />;
-
+  if (!fine) return <Navigate to='/' />;
+  const { isPending, data } = fine.auth.useSession();
+  if (!isPending && data) return <Navigate to='/' />;
 
   return (
     <div className='container mx-auto flex h-screen items-center justify-center py-10'>
