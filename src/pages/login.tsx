@@ -1,25 +1,26 @@
+import type React from "react";
 import { useState } from "react";
-import { useNavigate, Link, Navigate } from "react-router-dom";
-import { fine } from "@/lib/fine";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
-export default function SignupForm() {
+export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    name: "",
+    rememberMe: true,
   });
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
 
@@ -33,8 +34,12 @@ export default function SignupForm() {
     }
   };
 
+  const handleCheckboxChange = (checked: boolean) => {
+    setFormData((prev) => ({ ...prev, rememberMe: checked }));
+  };
+
   const validateForm = () => {
-    const newErrors = {};
+    const newErrors: Record<string, string> = {};
 
     if (!formData.email) {
       newErrors.email = "Email is required";
@@ -44,26 +49,21 @@ export default function SignupForm() {
 
     if (!formData.password) {
       newErrors.password = "Password is required";
-    } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters";
-    }
-
-    if (!formData.name) {
-      newErrors.name = "Name is required";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
+
   if (!validateForm()) return;
 
   setIsLoading(true);
 
   try {
-    const res = await fetch("http://localhost:3000/api/signup", {
+    const res = await fetch("http://localhost:3000/api/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -71,22 +71,28 @@ export default function SignupForm() {
       body: JSON.stringify(formData),
     });
 
-    const data = await res.json();
+  const data = await res.json();
+  console.log("Login data:", data);
+
 
     if (!res.ok) {
-      throw new Error(data.error || "Error al crear la cuenta");
+      throw new Error(data.error || "Login failed");
     }
 
-    toast({
-      title: "Cuenta creada",
-      description: "Ahora podés iniciar sesión.",
-    });
+   toast({
+  title: "Success",
+  description: "You are now logged in.",
+});
 
-    navigate("/login");
-  } catch (error) {
+  // Guardamos el usuario y redirigimos al dashboard
+  localStorage.setItem("user", JSON.stringify(data.user));
+  navigate("/dashboard", { replace: true });
+
+    
+  } catch (error: any) {
     toast({
       title: "Error",
-      description: error.message,
+      description: error.message || "Invalid email or password.",
       variant: "destructive",
     });
   } finally {
@@ -94,33 +100,15 @@ export default function SignupForm() {
   }
 };
 
- const user = JSON.parse(localStorage.getItem("user") || "null");
-  if (user) return <Navigate to='/' />;
-
-
   return (
     <div className='container mx-auto flex h-screen items-center justify-center py-10'>
       <Card className='mx-auto w-full max-w-md'>
         <CardHeader>
-          <CardTitle className='text-2xl'>Create an account</CardTitle>
-          <CardDescription>Enter your details below to create your account</CardDescription>
+          <CardTitle className='text-2xl'>Sign in</CardTitle>
+          <CardDescription>Enter your credentials to access your account</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className='space-y-4'>
-            <div className='space-y-2'>
-              <Label htmlFor='name'>Name</Label>
-              <Input
-                id='name'
-                name='name'
-                placeholder='John Doe'
-                value={formData.name}
-                onChange={handleChange}
-                disabled={isLoading}
-                aria-invalid={!!errors.name}
-              />
-              {errors.name && <p className='text-sm text-destructive'>{errors.name}</p>}
-            </div>
-
             <div className='space-y-2'>
               <Label htmlFor='email'>Email</Label>
               <Input
@@ -137,7 +125,12 @@ export default function SignupForm() {
             </div>
 
             <div className='space-y-2'>
-              <Label htmlFor='password'>Password</Label>
+              <div className='flex items-center justify-between'>
+                <Label htmlFor='password'>Password</Label>
+                <Link to='/forgot-password' className='text-sm text-primary underline-offset-4 hover:underline'>
+                  Forgot password?
+                </Link>
+              </div>
               <Input
                 id='password'
                 name='password'
@@ -149,6 +142,13 @@ export default function SignupForm() {
               />
               {errors.password && <p className='text-sm text-destructive'>{errors.password}</p>}
             </div>
+
+            <div className='flex items-center space-x-2'>
+              <Checkbox id='rememberMe' checked={formData.rememberMe} onCheckedChange={handleCheckboxChange} />
+              <Label htmlFor='rememberMe' className='text-sm font-normal'>
+                Remember me
+              </Label>
+            </div>
           </CardContent>
 
           <CardFooter className='flex flex-col space-y-4'>
@@ -156,17 +156,17 @@ export default function SignupForm() {
               {isLoading ? (
                 <>
                   <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                  Creating account...
+                  Signing in...
                 </>
               ) : (
-                "Sign up"
+                "Sign in"
               )}
             </Button>
 
             <p className='text-center text-sm text-muted-foreground'>
-              Already have an account?{" "}
-              <Link to='/login' className='text-primary underline underline-offset-4 hover:text-primary/90'>
-                Sign in
+              Don't have an account?{" "}
+              <Link to='/signup' className='text-primary underline underline-offset-4 hover:text-primary/90'>
+                Sign up
               </Link>
             </p>
           </CardFooter>

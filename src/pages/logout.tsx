@@ -1,4 +1,5 @@
 import { fine } from "@/lib/fine";
+import React from "react";
 import { useEffect } from "react";
 import { Navigate } from "react-router-dom";
 
@@ -7,7 +8,7 @@ export default function Logout() {
 
   // Define isPending and data, for example as state or from a hook
   // Here is a placeholder using useState; replace with your actual logic
-  const [isPending, setIsPending] = React.useState(false);
+  const [isPending] = React.useState(false);
   const [data, setData] = React.useState(null);
 
   useEffect(() => {
