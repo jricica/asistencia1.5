@@ -57,54 +57,42 @@ export default function SignupForm() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
+  if (!validateForm()) return;
 
-    if (!validateForm()) return;
+  setIsLoading(true);
 
-    setIsLoading(true);
+  try {
+    const res = await fetch("http://localhost:3000/api/signup", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    });
 
-    try {
-      const { data, error } = await fine.auth.signUp.email(
-        {
-          email: formData.email,
-          password: formData.password,
-          name: formData.name,
-          callbackURL: "/",
-        },
-        {
-          onRequest: () => {
-            setIsLoading(true);
-          },
-          onSuccess: () => {
-            toast({
-              title: "Account created",
-              description: "Please check your email to verify your account.",
-            });
-            navigate("/login");
-          },
-          onError: (ctx) => {
-            toast({
-              title: "Error",
-              description: ctx.error.message,
-              variant: "destructive",
-            });
-          },
-        }
-      );
+    const data = await res.json();
 
-      if (error) {
-        throw error;
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: error.message || "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+    if (!res.ok) {
+      throw new Error(data.error || "Error al crear la cuenta");
     }
-  };
+
+    toast({
+      title: "Cuenta creada",
+      description: "Ahora podés iniciar sesión.",
+    });
+
+    navigate("/login");
+  } catch (error) {
+    toast({
+      title: "Error",
+      description: error.message,
+      variant: "destructive",
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   if (!fine) return <Navigate to='/' />;
   const { isPending, data } = fine.auth.useSession();

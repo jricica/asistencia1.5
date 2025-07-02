@@ -56,55 +56,45 @@ export default function LoginForm() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    if (!validateForm()) return;
+  if (!validateForm()) return;
 
-    setIsLoading(true);
+  setIsLoading(true);
 
-    try {
-      const { data, error } = await fine.auth.signIn.email(
-        {
-          email: formData.email,
-          password: formData.password,
-          callbackURL: "/",
-          rememberMe: formData.rememberMe,
-        },
-        {
-          onRequest: () => {
-            setIsLoading(true);
-          },
-          onSuccess: () => {
-            toast({
-              title: "Success",
-              description: "You have been signed in successfully.",
-            });
-            navigate("/dashboard");
-          },
-          onError: (ctx) => {
-            toast({
-              title: "Error",
-              description: ctx.error.message,
-              variant: "destructive",
-            });
-          },
-        }
-      );
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Invalid email or password.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+  try {
+    const res = await fetch("http://localhost:3000/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Login failed");
     }
-  };
 
-  if (!fine) return <Navigate to='/' />;
-  const { isPending, data } = fine.auth.useSession();
-  if (!isPending && data) return <Navigate to='/' />;
+    toast({
+      title: "Success",
+      description: "You are now logged in.",
+    });
+    localStorage.setItem("user", JSON.stringify(data.user));
+    navigate("/dashboard");
+    
+  } catch (error: any) {
+    toast({
+      title: "Error",
+      description: error.message || "Invalid email or password.",
+      variant: "destructive",
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <div className='container mx-auto flex h-screen items-center justify-center py-10'>

@@ -57,50 +57,52 @@ const LoginForm = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!validateForm()) return;
+  if (!validateForm()) return;
 
-    setIsLoading(true);
+  setIsLoading(true);
 
-    try {
-      const { data, error } = await fine.auth.signIn.email(
-        {
-          email: formData.email,
-          password: formData.password,
-          callbackURL: "/",
-          rememberMe: formData.rememberMe,
-        },
-        {
-          onRequest: () => {
-            setIsLoading(true);
-          },
-          onSuccess: () => {
-            toast({
-              title: "Success",
-              description: "You have been signed in successfully.",
-            });
-            navigate("/dashboard");
-          },
-          onError: (ctx) => {
-            toast({
-              title: "Error",
-              description: ctx.error.message,
-              variant: "destructive",
-            });
-          },
-        }
-      );
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: error.message || "Invalid email or password.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+  try {
+    const res = await fetch("http://localhost:3000/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: formData.email,
+        password: formData.password,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Invalid credentials");
     }
-  };
+
+    // Guarda sesión temporal (ej. en localStorage o context)
+    localStorage.setItem("user", JSON.stringify(data.user));
+
+    toast({
+      title: "Success",
+      description: `Welcome, ${data.user.name}`,
+      variant: "success",
+    });
+    localStorage.setItem("user", JSON.stringify(data.user));
+
+    navigate("/dashboard");
+  } catch (error) {
+    toast({
+      title: "Error",
+      description: error.message || "Login failed",
+      variant: "destructive",
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   // Demo accounts for quick login
   const demoAccounts = [
