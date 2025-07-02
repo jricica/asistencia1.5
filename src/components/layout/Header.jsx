@@ -56,7 +56,6 @@ export function Header({ toggleSidebar }) {
           }
         } catch (error) {
           console.error("Error fetching user role:", error);
-          // Default to teacher if there's an error
           setUserRole("teacher");
         }
       };
