@@ -1,22 +1,15 @@
-import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
 const Index = () => {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      navigate("/dashboard");
-    }
-  }, [navigate]);
-
   return (
     <main className="w-full min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-background to-blue-50 dark:from-background dark:to-blue-950/20 text-foreground p-4">
       <div className="container max-w-6xl mx-auto px-4 py-8 flex flex-col lg:flex-row items-center justify-between gap-12">
-        <motion.div 
+        <motion.div
           className="flex-1 space-y-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -30,32 +23,32 @@ const Index = () => {
               A comprehensive platform for administrators and teachers to track student attendance, uniform compliance, and send reports.
             </p>
           </div>
-          
+
           <div className="flex flex-col sm:flex-row gap-4 pt-4">
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="text-lg"
               onClick={() => navigate("/login")}
             >
               Sign In
             </Button>
-            <Button 
-              variant="outline" 
-              size="lg" 
+            <Button
+              variant="outline"
+              size="lg"
               className="text-lg"
               onClick={() => navigate("/signup")}
             >
               Create Account
             </Button>
           </div>
-          
+
           <div className="pt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
               { title: "Easy Attendance", description: "Quickly mark attendance for entire classes or individual students" },
               { title: "Uniform Tracking", description: "Monitor uniform compliance and send automated reports" },
               { title: "Data Insights", description: "View attendance projections and analytics at a glance" }
             ].map((feature, i) => (
-              <motion.div 
+              <motion.div
                 key={i}
                 className="p-4 rounded-lg bg-white/50 dark:bg-slate-800/50 border shadow-sm"
                 initial={{ opacity: 0, y: 20 }}
@@ -68,8 +61,8 @@ const Index = () => {
             ))}
           </div>
         </motion.div>
-        
-        <motion.div 
+
+        <motion.div
           className="flex-1 flex justify-center"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -92,7 +85,7 @@ const Index = () => {
                     <div className="h-3 w-3 rounded-full bg-green-500"></div>
                   </div>
                 </div>
-                
+
                 <div className="space-y-4">
                   <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded w-3/4"></div>
                   <div className="grid grid-cols-3 gap-2">
