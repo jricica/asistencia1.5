@@ -13,7 +13,6 @@ const TeacherGrades = () => {
   const [grades, setGrades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [teacherLevel, setTeacherLevel] = useState(null);
-  const { data: session } = fine.auth.useSession();
   const { toast } = useToast();
 
   useEffect(() => {

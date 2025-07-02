@@ -94,9 +94,9 @@ export default function SignupForm() {
   }
 };
 
-  if (!fine) return <Navigate to='/' />;
-  const { isPending, data } = fine.auth.useSession();
-  if (!isPending && data) return <Navigate to='/' />;
+ const user = JSON.parse(localStorage.getItem("user") || "null");
+  if (user) return <Navigate to='/' />;
+
 
   return (
     <div className='container mx-auto flex h-screen items-center justify-center py-10'>

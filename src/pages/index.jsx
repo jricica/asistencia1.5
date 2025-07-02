@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 
 const Index = () => {
   const navigate = useNavigate();
-  const { data: session, isPending } = fine.auth.useSession();
+  
 
   useEffect(() => {
     if (!isPending && session) {

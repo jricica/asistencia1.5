@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
 const Profile = () => {
-  const { data: session } = fine.auth.useSession();
+
   const { toast } = useToast();
   
   const [formData, setFormData] = useState({

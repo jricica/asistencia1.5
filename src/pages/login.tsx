@@ -1,7 +1,6 @@
 import type React from "react";
 import { useState } from "react";
-import { useNavigate, Link, Navigate } from "react-router-dom";
-import { fine } from "@/lib/fine";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -72,18 +71,29 @@ const handleSubmit = async (e: React.FormEvent) => {
       body: JSON.stringify(formData),
     });
 
-    const data = await res.json();
+  const data = await res.json();
+  console.log("Login data:", data);
+
 
     if (!res.ok) {
       throw new Error(data.error || "Login failed");
     }
 
-    toast({
-      title: "Success",
-      description: "You are now logged in.",
-    });
-    localStorage.setItem("user", JSON.stringify(data.user));
-    navigate("/dashboard");
+   toast({
+  title: "Success",
+  description: "You are now logged in.",
+});
+
+// Guardamos el usuario
+localStorage.setItem("user", JSON.stringify(data.user));
+window.location.href = "/dashboard";
+
+
+// Forzamos redirección después de un pequeño delay
+setTimeout(() => {
+  navigate("/dashboard");
+}, 100);
+
     
   } catch (error: any) {
     toast({

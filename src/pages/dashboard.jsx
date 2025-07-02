@@ -8,7 +8,6 @@ import { Loader2, Users, ClipboardCheck, AlertTriangle, TrendingUp, Calendar } f
 import { DashboardLayout } from "@/components/layout/Dashboard";
 
 const Dashboard = () => {
-  const { data: session } = fine.auth.useSession();
   const [userRole, setUserRole] = useState(null);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({

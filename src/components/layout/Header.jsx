@@ -28,7 +28,7 @@ import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 
 export function Header({ toggleSidebar }) {
-  const { data: session } = fine.auth.useSession();
+
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
   const [userRole, setUserRole] = useState(null);

@@ -29,7 +29,6 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 export function AppSidebar() {
-  const { data: session } = fine.auth.useSession();
   const location = useLocation();
   const [userRole, setUserRole] = useState(null);
 
