@@ -24,7 +24,6 @@ export default function LoginForm() {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
 
-    // Clear error when user types
     if (errors[name]) {
       setErrors((prev) => {
         const newErrors = { ...prev };
@@ -55,106 +54,107 @@ export default function LoginForm() {
     return Object.keys(newErrors).length === 0;
   };
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  if (!validateForm()) return;
+    if (!validateForm()) return;
+    setIsLoading(true);
 
-  setIsLoading(true);
+    try {
+      const res = await fetch("http://localhost:3000/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
 
-  try {
-    const res = await fetch("http://localhost:3000/api/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(formData),
-    });
+      const data = await res.json();
 
-  const data = await res.json();
-  console.log("Login data:", data);
+      if (!res.ok) {
+        throw new Error(data?.error || "Login failed");
+      }
 
+      toast({ title: "Success", description: "You are now logged in." });
 
-    if (!res.ok) {
-      throw new Error(data.error || "Login failed");
+      // Guardar sesión en localStorage
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      // Redirigir
+      navigate("/dashboard", { replace: true });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Invalid email or password.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
-
-   toast({
-  title: "Success",
-  description: "You are now logged in.",
-});
-
-  localStorage.setItem("user", JSON.stringify(data.user));
-  navigate("/dashboard", { replace: true });
-
-    
-  } catch (error: any) {
-    toast({
-      title: "Error",
-      description: error.message || "Invalid email or password.",
-      variant: "destructive",
-    });
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   return (
-    <div className='container mx-auto flex h-screen items-center justify-center py-10'>
-      <Card className='mx-auto w-full max-w-md'>
+    <div className="container mx-auto flex h-screen items-center justify-center py-10">
+      <Card className="mx-auto w-full max-w-md">
         <CardHeader>
-          <CardTitle className='text-2xl'>Sign in</CardTitle>
+          <CardTitle className="text-2xl">Sign in</CardTitle>
           <CardDescription>Enter your credentials to access your account</CardDescription>
         </CardHeader>
+
         <form onSubmit={handleSubmit}>
-          <CardContent className='space-y-4'>
-            <div className='space-y-2'>
-              <Label htmlFor='email'>Email</Label>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
               <Input
-                id='email'
-                name='email'
-                type='email'
-                placeholder='john@example.com'
+                id="email"
+                name="email"
+                type="email"
+                placeholder="john@example.com"
                 value={formData.email}
                 onChange={handleChange}
                 disabled={isLoading}
                 aria-invalid={!!errors.email}
               />
-              {errors.email && <p className='text-sm text-destructive'>{errors.email}</p>}
+              {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
             </div>
 
-            <div className='space-y-2'>
-              <div className='flex items-center justify-between'>
-                <Label htmlFor='password'>Password</Label>
-                <Link to='/forgot-password' className='text-sm text-primary underline-offset-4 hover:underline'>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Password</Label>
+                <Link to="/forgot-password" className="text-sm text-primary underline-offset-4 hover:underline">
                   Forgot password?
                 </Link>
               </div>
               <Input
-                id='password'
-                name='password'
-                type='password'
+                id="password"
+                name="password"
+                type="password"
                 value={formData.password}
                 onChange={handleChange}
                 disabled={isLoading}
                 aria-invalid={!!errors.password}
               />
-              {errors.password && <p className='text-sm text-destructive'>{errors.password}</p>}
+              {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
             </div>
 
-            <div className='flex items-center space-x-2'>
-              <Checkbox id='rememberMe' checked={formData.rememberMe} onCheckedChange={handleCheckboxChange} />
-              <Label htmlFor='rememberMe' className='text-sm font-normal'>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="rememberMe"
+                checked={formData.rememberMe}
+                onCheckedChange={handleCheckboxChange}
+              />
+              <Label htmlFor="rememberMe" className="text-sm font-normal">
                 Remember me
               </Label>
             </div>
           </CardContent>
 
-          <CardFooter className='flex flex-col space-y-4'>
-            <Button type='submit' className='w-full' disabled={isLoading}>
+          <CardFooter className="flex flex-col space-y-4">
+            <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <>
-                  <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Signing in...
                 </>
               ) : (
@@ -162,9 +162,9 @@ const handleSubmit = async (e: React.FormEvent) => {
               )}
             </Button>
 
-            <p className='text-center text-sm text-muted-foreground'>
+            <p className="text-center text-sm text-muted-foreground">
               Don't have an account?{" "}
-              <Link to='/signup' className='text-primary underline underline-offset-4 hover:text-primary/90'>
+              <Link to="/signup" className="text-primary underline underline-offset-4 hover:text-primary/90">
                 Sign up
               </Link>
             </p>

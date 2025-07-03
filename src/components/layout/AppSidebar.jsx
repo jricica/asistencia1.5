@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { fine } from "@/lib/fine";
 import {
   Sidebar,
   SidebarContent,
@@ -13,49 +12,38 @@ import {
 } from "@/components/ui/sidebar";
 import {
   Home,
-  Users,
   BookOpen,
   ClipboardCheck,
   BarChart2,
   Settings,
-  Mail,
   School,
   Layers,
   UserCog,
   GraduationCap,
-  FileText
+  FileText,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 export function AppSidebar() {
-  const { data: session } = fine.auth.useSession();
   const location = useLocation();
   const [userRole, setUserRole] = useState(null);
 
+
+  const storedUser = localStorage.getItem("user");
+  const session = storedUser ? JSON.parse(storedUser) : null;
+
   useEffect(() => {
-    if (session?.user) {
-      const getUserRole = async () => {
-        try {
-          const users = await fine.table("users")
-            .select("role")
-            .eq("email", session.user.email);
-          
-          if (users && users.length > 0) {
-            setUserRole(users[0].role);
-          }
-        } catch (error) {
-          console.error("Error fetching user role:", error);
-          setUserRole("teacher");
-        }
-      };
-      getUserRole();
+    if (session?.role) {
+      setUserRole(session.role);
     }
   }, [session]);
 
+  if (!userRole) return null;
+
   const getMenuItems = () => {
     const baseItems = [
-      { title: "Dashboard", url: "/dashboard", icon: Home }
+      { title: "Dashboard", url: "/dashboard", icon: Home },
     ];
 
     const adminItems = [
@@ -84,13 +72,13 @@ export function AppSidebar() {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
-      transition: { staggerChildren: 0.1, delayChildren: 0.3 }
-    }
+      transition: { staggerChildren: 0.1, delayChildren: 0.3 },
+    },
   };
 
   const item = {
     hidden: { opacity: 0, x: -20 },
-    show: { opacity: 1, x: 0 }
+    show: { opacity: 1, x: 0 },
   };
 
   return (
@@ -144,30 +132,29 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {userRole && (
-          <div className="mt-auto px-4 py-4">
-            <div className="rounded-lg bg-primary/10 p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold">
-                  {userRole === "admin" ? "A" : "T"}
-                </div>
-                <div>
-                  <p className="text-sm font-medium">
-                    {userRole === "admin" ? "Admin" : "Teacher"} Mode
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {userRole === "admin" ? "Full access" : "Limited access"}
-                  </p>
-                </div>
+        {/* Rol Summary Box */}
+        <div className="mt-auto px-4 py-4">
+          <div className="rounded-lg bg-primary/10 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold">
+                {userRole === "admin" ? "A" : "T"}
               </div>
-              <div className="text-xs text-muted-foreground">
-                {userRole === "admin"
-                  ? "You have full administrative privileges"
-                  : "You can manage grades and students"}
+              <div>
+                <p className="text-sm font-medium">
+                  {userRole === "admin" ? "Admin" : "Teacher"} Mode
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {userRole === "admin" ? "Full access" : "Limited access"}
+                </p>
               </div>
             </div>
+            <div className="text-xs text-muted-foreground">
+              {userRole === "admin"
+                ? "You have full administrative privileges"
+                : "You can manage grades and students"}
+            </div>
           </div>
-        )}
+        </div>
       </SidebarContent>
     </Sidebar>
   );

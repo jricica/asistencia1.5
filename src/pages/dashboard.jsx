@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { fine } from "@/lib/fine";
 import { DashboardLayout } from "@/components/layout/Dashboard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,7 +7,7 @@ import { motion } from "framer-motion";
 import { Loader2, Users, ClipboardCheck, AlertTriangle, TrendingUp, Calendar } from "lucide-react";
 
 const Dashboard = () => {
-  const { data: session } = fine.auth.useSession();
+  const session = JSON.parse(localStorage.getItem("user") || "{}");
   const [userRole, setUserRole] = useState(null);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -19,23 +18,12 @@ const Dashboard = () => {
     attendanceByDay: []
   });
 
-  useEffect(() => {
-    const fetchUserRole = async () => {
-      if (session?.user) {
-        try {
-          const users = await fine.table("users")
-            .select("role")
-            .eq("email", session.user.email);
-          
-          if (users && users.length > 0) {
-            setUserRole(users[0].role);
-          }
-        } catch (error) {
-          console.error("Error fetching user role:", error);
-          setUserRole("teacher");
-        }
-      }
-    };
+ useEffect(() => {
+  const fetchUserRole = async () => {
+    if (session?.email) {
+      setUserRole(session.role || "teacher");
+    }
+  };
 
     const fetchDashboardData = async () => {
       try {
