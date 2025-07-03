@@ -82,7 +82,11 @@ const LoginForm = () => {
 
       toast({ title: "Success", description: "You are now logged in." });
       setUser(data.user);
-      navigate("/dashboard");
+      if (data.user.role === "student") {
+        navigate("/student-dashboard");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (error) {
       toast({
         title: "Error",

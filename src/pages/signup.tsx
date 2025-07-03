@@ -16,13 +16,16 @@ export default function SignupForm() {
     email: "",
     password: "",
     name: "",
+    role: "teacher",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
   const { toast } = useToast();
   const { setUser } = useUser();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
 
@@ -55,6 +58,10 @@ export default function SignupForm() {
       newErrors.name = "Name is required";
     }
 
+    if (!formData.role) {
+      newErrors.role = "Role is required";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -81,7 +88,11 @@ export default function SignupForm() {
 
       toast({ title: "Account created", description: "Welcome!" });
       setUser(data.user);
-      navigate("/dashboard");
+      if (data.user.role === "student") {
+        navigate("/student-dashboard");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (error: any) {
       toast({
         title: "Error",
@@ -143,6 +154,22 @@ export default function SignupForm() {
                 aria-invalid={!!errors.password}
               />
               {errors.password && <p className='text-sm text-destructive'>{errors.password}</p>}
+            </div>
+
+            <div className='space-y-2'>
+              <Label htmlFor='role'>Role</Label>
+              <select
+                id='role'
+                name='role'
+                value={formData.role}
+                onChange={handleChange}
+                disabled={isLoading}
+                className='w-full rounded border px-3 py-2'
+              >
+                <option value='teacher'>Teacher</option>
+                <option value='student'>Student</option>
+              </select>
+              {errors.role && <p className='text-sm text-destructive'>{errors.role}</p>}
             </div>
           </CardContent>
 
