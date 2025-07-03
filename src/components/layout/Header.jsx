@@ -28,7 +28,7 @@ import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 
 export function Header({ toggleSidebar }) {
-  const { data: session } = fine.auth.useSession();
+  const session = fine.auth.getSessionSync?.() || null;
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
   const [userRole, setUserRole] = useState(null);
@@ -47,13 +47,14 @@ export function Header({ toggleSidebar }) {
       if (!session?.user?.email) return;
 
       try {
-        const users = await fine
-          .table("users")
-          .select("role")
-          .eq("email", session.user.email);
+        const res = await fetch(
+          `http://localhost:3000/api/user/${session.user.email}`
+        );
+        if (!res.ok) throw new Error("Usuario no encontrado");
+        const user = await res.json();
 
-        if (isMounted && users && users.length > 0) {
-          setUserRole(users[0].role);
+        if (isMounted) {
+          setUserRole(user.role);
         }
       } catch (error) {
         console.error("Error fetching user role:", error);

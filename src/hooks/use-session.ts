@@ -1,18 +1,11 @@
 import { useState, useEffect } from "react";
+import { fine } from "@/lib/fine";
 
 export function useSession() {
   const [session, setSession] = useState(null);
 
   useEffect(() => {
-    const stored = localStorage.getItem("session");
-    if (stored) {
-      try {
-        setSession(JSON.parse(stored));
-      } catch (error) {
-        console.error("Failed to parse session:", error);
-        setSession(null);
-      }
-    }
+    setSession(fine.auth.getSessionSync?.() || null);
   }, []);
 
   return { session };
