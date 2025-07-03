@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { fine } from "@/lib/fine";
+import { useUser } from "@/context/UserContext";
 import { DashboardLayout } from "@/components/layout/Dashboard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,12 +10,12 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
 const Profile = () => {
-
+  const { user } = useUser();
   const { toast } = useToast();
   
   const [formData, setFormData] = useState({
-    name: session?.user?.name || "",
-    email: session?.user?.email || "",
+    name: user?.name || "",
+    email: user?.email || "",
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",

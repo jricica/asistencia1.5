@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { fine } from "@/lib/fine";
+import { useUser } from "@/context/UserContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,7 @@ const LoginForm = () => {
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { setUser } = useUser();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -64,33 +65,24 @@ const LoginForm = () => {
     setIsLoading(true);
 
     try {
-      const { data, error } = await fine.auth.signIn.email(
-        {
+      const res = await fetch("http://localhost:3000/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           email: formData.email,
           password: formData.password,
-          callbackURL: "/",
-          rememberMe: formData.rememberMe,
-        },
-        {
-          onRequest: () => {
-            setIsLoading(true);
-          },
-          onSuccess: () => {
-            toast({
-              title: "Success",
-              description: "You have been signed in successfully.",
-            });
-            navigate("/dashboard");
-          },
-          onError: (ctx) => {
-            toast({
-              title: "Error",
-              description: ctx.error.message,
-              variant: "destructive",
-            });
-          },
-        }
-      );
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data?.error || "Login failed");
+      }
+
+      toast({ title: "Success", description: "You are now logged in." });
+      setUser(data);
+      navigate("/dashboard");
     } catch (error) {
       toast({
         title: "Error",

@@ -1,8 +1,8 @@
 import type React from "react";
 
 import { useState } from "react";
-import { useNavigate, Link, Navigate } from "react-router-dom";
-import { fine } from "@/lib/fine";
+import { useNavigate, Link } from "react-router-dom";
+import { useUser } from "@/context/UserContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,7 @@ export default function SignupForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { setUser } = useUser();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -66,37 +67,21 @@ export default function SignupForm() {
     setIsLoading(true);
 
     try {
-      const { data, error } = await fine.auth.signUp.email(
-        {
-          email: formData.email,
-          password: formData.password,
-          name: formData.name,
-          callbackURL: "/",
-        },
-        {
-          onRequest: () => {
-            setIsLoading(true);
-          },
-          onSuccess: () => {
-            toast({
-              title: "Account created",
-              description: "Please check your email to verify your account.",
-            });
-            navigate("/login");
-          },
-          onError: (ctx) => {
-            toast({
-              title: "Error",
-              description: ctx.error.message,
-              variant: "destructive",
-            });
-          },
-        }
-      );
+      const res = await fetch("http://localhost:3000/api/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
 
-      if (error) {
-        throw error;
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data?.error || "Signup failed");
       }
+
+      toast({ title: "Account created", description: "Welcome!" });
+      setUser(data);
+      navigate("/dashboard");
     } catch (error: any) {
       toast({
         title: "Error",
@@ -107,10 +92,6 @@ export default function SignupForm() {
       setIsLoading(false);
     }
   };
-
-  if (!fine) return <Navigate to='/' />;
-  const { isPending, data } = fine.auth.useSession();
-  if (!isPending && data) return <Navigate to='/' />;
 
   return (
     <div className='container mx-auto flex h-screen items-center justify-center py-10'>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/Dashboard";
-import { fine } from "@/lib/fine";
+import { useUser } from "@/context/UserContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import { Loader2, Users, ClipboardCheck, AlertTriangle, TrendingUp, Calendar } from "lucide-react";
 
 const Dashboard = () => {
-  const session = fine.auth.getSessionSync?.() || null;
+  const { user: session } = useUser();
   const [userRole, setUserRole] = useState(null);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -21,11 +21,11 @@ const Dashboard = () => {
 
 useEffect(() => {
   const fetchUserRole = async () => {
-    if (!session?.user?.email) return;
+    if (!session?.email) return;
 
     try {
       const res = await fetch(
-        `http://localhost:3000/api/user/${session.user.email}`
+        `http://localhost:3000/api/user/${session.email}`
       );
       if (!res.ok) throw new Error("Usuario no encontrado");
 
@@ -102,7 +102,7 @@ useEffect(() => {
 
     fetchUserRole();
     fetchDashboardData();
-  }, [session?.user?.email]);
+  }, [session?.email]);
 
   const COLORS = ['#4ade80', '#f87171', '#facc15', '#60a5fa', '#c084fc'];
 
@@ -146,7 +146,7 @@ useEffect(() => {
         <motion.div variants={item}>
           <h1 className="text-3xl font-bold">Dashboard</h1>
           <p className="text-muted-foreground">
-            Welcome back, <span className="font-medium text-foreground">{session?.user?.name}</span>! Here's an overview of the attendance system.
+            Welcome back, <span className="font-medium text-foreground">{session?.name}</span>! Here's an overview of the attendance system.
           </p>
         </motion.div>
 

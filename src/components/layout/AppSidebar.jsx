@@ -24,20 +24,21 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { fine } from "@/lib/fine";
+import { useUser } from "@/context/UserContext";
 
 export function AppSidebar() {
   const location = useLocation();
   const [userRole, setUserRole] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const { user: session } = useUser();
+
   useEffect(() => {
     const getUserRole = async () => {
-      const session = fine.auth.getSessionSync?.() || null;
-      if (!session?.user?.email) return;
+      if (!session?.email) return;
 
       try {
-        const res = await fetch(`http://localhost:3000/api/user/${session.user.email}`);
+        const res = await fetch(`http://localhost:3000/api/user/${session.email}`);
         if (!res.ok) throw new Error("Usuario no encontrado");
 
         const user = await res.json();
