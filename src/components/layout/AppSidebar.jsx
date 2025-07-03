@@ -11,15 +11,11 @@ import {
 } from "@/components/ui/sidebar";
 import {
   Home,
-  BookOpen,
-  ClipboardCheck,
   BarChart2,
   Settings,
   School,
   Layers,
   UserCog,
-  GraduationCap,
-  FileText,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -29,7 +25,7 @@ export function AppSidebar() {
   const location = useLocation();
   const { user: session } = useUser();
 
-  if (!session) {
+  if (!session || !session.role) {
     return (
       <Sidebar className="border-r bg-background">
         <SidebarContent className="p-4 text-muted-foreground text-sm">
@@ -43,22 +39,18 @@ export function AppSidebar() {
 
   const getMenuItems = () => {
     const baseItems = [
-      { title: "Dashboard", url: userRole === "student" ? "/student-dashboard" : "/dashboard", icon: Home },
-    ];
-
-    const adminItems = [
-      { title: "Teachers", url: "/admin/teachers", icon: UserCog },
-      { title: "Levels & Grades", url: "/admin/levels", icon: Layers },
-      { title: "Projections", url: "/admin/projections", icon: BarChart2 },
-      { title: "Settings", url: "/admin/settings", icon: Settings },
+      { title: "Dashboard", url: "/dashboard", icon: Home },
     ];
 
     const teacherItems = [
-      { title: "Grades", url: "/teacher/grades", icon: BookOpen },
-      { title: "Students", url: "/teacher/students", icon: GraduationCap },
-      { title: "Attendance", url: "/teacher/attendance", icon: ClipboardCheck },
-      { title: "Reports", url: "/teacher/reports", icon: FileText },
-      { title: "Projections", url: "/teacher/projections", icon: BarChart2 },
+      { title: "Levels & Grades", url: "/admin/levels", icon: Layers },
+      { title: "Projections", url: "/admin/projections", icon: BarChart2 },
+    ];
+
+    const adminItems = [
+      ...teacherItems,
+      { title: "Teachers", url: "/admin/teachers", icon: UserCog },
+      { title: "Settings", url: "/admin/settings", icon: Settings },
     ];
 
     if (userRole === "admin") return [...baseItems, ...adminItems];
