@@ -2,14 +2,8 @@ import { createContext, useContext, useEffect, useState } from "react";
 
 const ThemeProviderContext = createContext();
 
-export function ThemeProvider({ children, defaultTheme = "system", storageKey = "ui-theme" }) {
-  const [theme, setTheme] = useState(() => {
-    // Check if we're on the client side
-    if (typeof window !== "undefined") {
-      return localStorage.getItem(storageKey) || defaultTheme;
-    }
-    return defaultTheme;
-  });
+export function ThemeProvider({ children, defaultTheme = "system" }) {
+  const [theme, setTheme] = useState(defaultTheme);
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -31,7 +25,6 @@ export function ThemeProvider({ children, defaultTheme = "system", storageKey = 
   const value = {
     theme,
     setTheme: (newTheme) => {
-      localStorage.setItem(storageKey, newTheme);
       setTheme(newTheme);
     },
   };

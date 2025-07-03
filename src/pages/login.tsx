@@ -1,6 +1,7 @@
 import type React from "react";
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { fine } from "@/lib/fine";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -78,10 +79,10 @@ export default function LoginForm() {
 
       toast({ title: "Success", description: "You are now logged in." });
 
-      // Guardar sesión en localStorage
-      localStorage.setItem("user", JSON.stringify(data.user));
+      if (fine?.auth?.setSession) {
+        fine.auth.setSession({ user: data.user });
+      }
 
-      // Redirigir
       navigate("/dashboard", { replace: true });
     } catch (error: any) {
       toast({

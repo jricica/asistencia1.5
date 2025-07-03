@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/Dashboard";
+import { fine } from "@/lib/fine";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
@@ -7,7 +8,7 @@ import { motion } from "framer-motion";
 import { Loader2, Users, ClipboardCheck, AlertTriangle, TrendingUp, Calendar } from "lucide-react";
 
 const Dashboard = () => {
-  const session = JSON.parse(localStorage.getItem("user") || "{}");
+  const session = fine.auth.getSessionSync?.() || null;
   const [userRole, setUserRole] = useState(null);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -18,10 +19,21 @@ const Dashboard = () => {
     attendanceByDay: []
   });
 
- useEffect(() => {
+useEffect(() => {
   const fetchUserRole = async () => {
-    if (session?.email) {
-      setUserRole(session.role || "teacher");
+    if (!session?.user?.email) return;
+
+    try {
+      const res = await fetch(
+        `http://localhost:3000/api/user/${session.user.email}`
+      );
+      if (!res.ok) throw new Error("Usuario no encontrado");
+
+      const user = await res.json();
+      setUserRole(user.role);
+    } catch (err) {
+      console.error("Error cargando rol:", err);
+      setUserRole("teacher");
     }
   };
 
@@ -90,7 +102,7 @@ const Dashboard = () => {
 
     fetchUserRole();
     fetchDashboardData();
-  }, [session]);
+  }, [session?.user?.email]);
 
   const COLORS = ['#4ade80', '#f87171', '#facc15', '#60a5fa', '#c084fc'];
 
