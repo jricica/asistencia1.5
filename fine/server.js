@@ -19,7 +19,34 @@ app.get('/api/users', async (_req, res) => {
   }
 });
 
-// ✅ Endpoint de login
+// Endpoint para registrar un nuevo usuario
+app.post('/api/signup', async (req, res) => {
+  const { name, email, password, role } = req.body;
+
+  if (!name || !email || !password || !role) {
+    return res.status(400).json({ error: 'Faltan campos' });
+  }
+
+  try {
+    const [exists] = await db.query('SELECT id FROM users WHERE email = ?', [email]);
+    if (exists.length > 0) {
+      return res.status(400).json({ error: 'El email ya existe' });
+    }
+
+    const [result] = await db.query(
+      'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
+      [name, email, password, role]
+    );
+
+    const user = { id: result.insertId, name, email, role };
+    res.status(201).json(user);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error en el servidor' });
+  }
+});
+
+// Endpoint de login
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -29,7 +56,7 @@ app.post('/api/login', async (req, res) => {
 
   try {
     const [rows] = await db.query(
-      'SELECT * FROM users WHERE email = ? AND password = ?',
+      'SELECT id, name, email, role FROM users WHERE email = ? AND password = ?',
       [email, password]
     );
 
@@ -37,17 +64,7 @@ app.post('/api/login', async (req, res) => {
       return res.status(401).json({ error: 'Credenciales incorrectas' });
     }
 
-    const user = rows[0];
-
-    res.json({
-      success: true,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-    });
+    res.json(rows[0]);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error en el servidor' });
