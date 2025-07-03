@@ -160,6 +160,7 @@ export default function SignupForm() {
                 disabled={isLoading}
                 className='w-full rounded border px-3 py-2'
               >
+                <option value='teacher'>Admin</option>
                 <option value='teacher'>Teacher</option>
                 <option value='student'>Student</option>
               </select>
