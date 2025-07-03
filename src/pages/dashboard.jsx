@@ -25,7 +25,10 @@ useEffect(() => {
 
     try {
       const res = await fetch(
-        `http://localhost:3000/api/user/${session.email}`
+        `http://localhost:3000/api/user/${session.email}`,
+        {
+          headers: { Authorization: String(session.id) }
+        }
       );
       if (!res.ok) throw new Error("Usuario no encontrado");
 
@@ -39,6 +42,11 @@ useEffect(() => {
 
     const fetchDashboardData = async () => {
       try {
+        if (session?.id) {
+          await fetch('http://localhost:3000/api/users', {
+            headers: { Authorization: String(session.id) }
+          });
+        }
         // In a real app, you would fetch actual data from the database
         // For now, we'll use mock data
         

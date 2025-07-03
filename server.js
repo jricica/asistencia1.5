@@ -10,12 +10,20 @@ app.use(express.json());
 
 // Simple authentication middleware using user id header
 export const isAuthenticated = async (req, res, next) => {
-  const userId = req.header('authorization');
-  if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+  const userIdHeader = req.header('authorization');
+  const userId = parseInt(userIdHeader, 10);
+
+  if (!userIdHeader || Number.isNaN(userId)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
   try {
     const [rows] = await db.query('SELECT id FROM users WHERE id = ?', [userId]);
-    if (rows.length === 0) return res.status(401).json({ error: 'Unauthorized' });
-    req.userId = Number(userId);
+    if (rows.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    req.userId = userId;
     next();
   } catch (err) {
     console.error(err);
