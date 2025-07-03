@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "./components/ui/tooltip";
 import { ThemeProvider } from "./components/layout/theme-provider";
 import { SidebarProvider } from "./components/ui/sidebar";
+import { UserProvider } from "./context/UserContext";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -40,8 +41,9 @@ createRoot(document.getElementById("root")!).render(
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <ThemeProvider>
-        <SidebarProvider>
-          <BrowserRouter>
+        <UserProvider>
+          <SidebarProvider>
+            <BrowserRouter>
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<Index />} />
@@ -71,6 +73,7 @@ createRoot(document.getElementById("root")!).render(
           <Sonner />
           <Toaster />
         </SidebarProvider>
+        </UserProvider>
       </ThemeProvider>
     </TooltipProvider>
   </QueryClientProvider>

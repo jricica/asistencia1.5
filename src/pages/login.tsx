@@ -1,7 +1,7 @@
 import type React from "react";
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { fine } from "@/lib/fine";
+import { useUser } from "@/context/UserContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,7 @@ export default function LoginForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { setUser } = useUser();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -78,10 +79,7 @@ export default function LoginForm() {
       }
 
       toast({ title: "Success", description: "You are now logged in." });
-
-      if (fine?.auth?.setSession) {
-        fine.auth.setSession({ user: data.user });
-      }
+      setUser(data);
 
       navigate("/dashboard", { replace: true });
     } catch (error: any) {

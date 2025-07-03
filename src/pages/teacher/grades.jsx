@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { fine } from "@/lib/fine";
+import { useUser } from "@/context/UserContext";
 import { DashboardLayout } from "@/components/layout/Dashboard";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,12 +13,12 @@ const TeacherGrades = () => {
   const [grades, setGrades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [teacherLevel, setTeacherLevel] = useState(null);
-  const { data: session } = fine.auth.useSession();
+  const { user: session } = useUser();
   const { toast } = useToast();
 
   useEffect(() => {
     const fetchTeacherData = async () => {
-      if (!session?.user) return;
+      if (!session) return;
       
       try {
         // In a real app, you would fetch the teacher's data from the database

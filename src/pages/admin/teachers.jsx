@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { fine } from "@/lib/fine";
 import { DashboardLayout } from "@/components/layout/Dashboard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";

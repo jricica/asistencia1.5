@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { fine } from "@/lib/fine";
+import { useUser } from "@/context/UserContext";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -28,7 +28,7 @@ import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 
 export function Header({ toggleSidebar }) {
-  const session = fine.auth.getSessionSync?.() || null;
+  const { user: session } = useUser();
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
   const [userRole, setUserRole] = useState(null);
@@ -44,11 +44,11 @@ export function Header({ toggleSidebar }) {
     let isMounted = true;
 
     const getUserRole = async () => {
-      if (!session?.user?.email) return;
+      if (!session?.email) return;
 
       try {
         const res = await fetch(
-          `http://localhost:3000/api/user/${session.user.email}`
+          `http://localhost:3000/api/user/${session.email}`
         );
         if (!res.ok) throw new Error("Usuario no encontrado");
         const user = await res.json();
@@ -69,10 +69,10 @@ export function Header({ toggleSidebar }) {
     return () => {
       isMounted = false;
     };
-  }, [session?.user?.email]);
+  }, [session?.email]);
 
-  const userInitials = session?.user?.name
-    ? session.user.name
+  const userInitials = session?.name
+    ? session.name
         .split(" ")
         .map((n) => n[0])
         .join("")
@@ -171,14 +171,14 @@ export function Header({ toggleSidebar }) {
           )}
         </div>
 
-        {session?.user && (
+        {session && (
           <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                 <Avatar className="h-9 w-9 border-2 border-primary/20">
                   <AvatarImage
-                    src={session.user.image || ""}
-                    alt={session.user.name}
+                    src={session.image || ""}
+                    alt={session.name}
                   />
                   <AvatarFallback className="bg-primary/10 text-primary">
                     {userInitials}
@@ -190,10 +190,10 @@ export function Header({ toggleSidebar }) {
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">
-                    {session.user.name}
+                    {session.name}
                   </p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    {session.user.email}
+                    {session.email}
                   </p>
                   {userRole && (
                     <Badge variant="outline" className="mt-1 w-fit">
