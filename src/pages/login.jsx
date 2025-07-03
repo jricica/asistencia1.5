@@ -81,7 +81,7 @@ const LoginForm = () => {
       }
 
       toast({ title: "Success", description: "You are now logged in." });
-      setUser(data);
+      setUser(data.user ?? data);
       navigate("/dashboard");
     } catch (error) {
       toast({

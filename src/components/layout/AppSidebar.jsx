@@ -39,7 +39,7 @@ export function AppSidebar() {
     );
   }
 
-  const userRole = session.role;
+  const userRole = session.role || "";
 
   const getMenuItems = () => {
     const baseItems = [
