@@ -27,6 +27,11 @@ app.post('/api/signup', async (req, res) => {
     return res.status(400).json({ error: 'Faltan campos' });
   }
 
+  const allowedRoles = ['teacher', 'student', 'admin'];
+  if (!allowedRoles.includes(role)) {
+    return res.status(400).json({ error: 'Rol inválido' });
+  }
+
   try {
     const [exists] = await db.query('SELECT id FROM users WHERE email = ?', [email]);
     if (exists.length > 0) {

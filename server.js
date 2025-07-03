@@ -52,9 +52,13 @@ app.post('/api/login', async (req, res) => {
 });
 
 app.post('/api/signup', async (req, res) => {
-  const { name, email, password } = req.body;
-  if (!name || !email || !password) {
+  const { name, email, password, role } = req.body;
+  if (!name || !email || !password || !role) {
     return res.status(400).json({ error: 'Faltan campos' });
+  }
+  const allowedRoles = ['teacher', 'student', 'admin'];
+  if (!allowedRoles.includes(role)) {
+    return res.status(400).json({ error: 'Rol inválido' });
   }
   try {
     const [exists] = await db.query('SELECT id FROM users WHERE email = ?', [email]);
@@ -63,9 +67,9 @@ app.post('/api/signup', async (req, res) => {
     }
     const [result] = await db.query(
       'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
-      [name, email, password, 'teacher']
+      [name, email, password, role]
     );
-    const user = { id: result.insertId, name, email, role: 'teacher' };
+    const user = { id: result.insertId, name, email, role };
     res.status(201).json({ user });
   } catch (err) {
     console.error(err);

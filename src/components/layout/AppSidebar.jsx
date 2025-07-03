@@ -43,7 +43,7 @@ export function AppSidebar() {
 
   const getMenuItems = () => {
     const baseItems = [
-      { title: "Dashboard", url: "/dashboard", icon: Home },
+      { title: "Dashboard", url: userRole === "student" ? "/student-dashboard" : "/dashboard", icon: Home },
     ];
 
     const adminItems = [
@@ -136,21 +136,23 @@ export function AppSidebar() {
           <div className="rounded-lg bg-primary/10 p-4">
             <div className="flex items-center gap-2 mb-2">
               <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold">
-                {userRole === "admin" ? "A" : "T"}
+                {userRole === "admin" ? "A" : userRole === "teacher" ? "T" : "S"}
               </div>
               <div>
                 <p className="text-sm font-medium">
-                  {userRole === "admin" ? "Admin" : "Teacher"} Mode
+                  {userRole === "admin" ? "Admin" : userRole === "teacher" ? "Teacher" : "Student"} Mode
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {userRole === "admin" ? "Full access" : "Limited access"}
+                  {userRole === "admin" ? "Full access" : userRole === "teacher" ? "Limited access" : "Student view"}
                 </p>
               </div>
             </div>
             <div className="text-xs text-muted-foreground">
               {userRole === "admin"
                 ? "You have full administrative privileges"
-                : "You can manage grades and students"}
+                : userRole === "teacher"
+                ? "You can manage grades and students"
+                : "View your attendance and reports"}
             </div>
           </div>
         </div>
