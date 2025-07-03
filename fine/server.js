@@ -8,7 +8,7 @@ const PORT = 3000;
 app.use(cors());
 app.use(express.json());
 
-// Endpoint para obtener todos los usuarios
+// ✅ Obtener todos los usuarios
 app.get('/api/users', async (_req, res) => {
   try {
     const [rows] = await db.query('SELECT * FROM users');
@@ -39,7 +39,6 @@ app.post('/api/login', async (req, res) => {
 
     const user = rows[0];
 
-    // ✅ Puedes guardar el usuario en sesión aquí si usas cookies o JWT
     res.json({
       success: true,
       user: {
@@ -52,6 +51,27 @@ app.post('/api/login', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error en el servidor' });
+  }
+});
+
+// ✅ Nueva ruta: obtener usuario por email
+app.get('/api/user/:email', async (req, res) => {
+  const { email } = req.params;
+
+  try {
+    const [rows] = await db.query(
+      'SELECT id, name, email, role FROM users WHERE email = ?',
+      [email]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    res.json(rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al obtener el usuario' });
   }
 });
 

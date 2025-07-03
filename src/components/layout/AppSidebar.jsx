@@ -24,22 +24,44 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { fine } from "@/lib/fine";
 
 export function AppSidebar() {
   const location = useLocation();
   const [userRole, setUserRole] = useState(null);
-
-
-  const storedUser = localStorage.getItem("user");
-  const session = storedUser ? JSON.parse(storedUser) : null;
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (session?.role) {
-      setUserRole(session.role);
-    }
-  }, [session]);
+    const getUserRole = async () => {
+      const session = fine.auth.getSessionSync?.() || null;
+      if (!session?.user?.email) return;
 
-  if (!userRole) return null;
+      try {
+        const res = await fetch(`http://localhost:3000/api/user/${session.user.email}`);
+        if (!res.ok) throw new Error("Usuario no encontrado");
+
+        const user = await res.json();
+        setUserRole(user.role);
+      } catch (err) {
+        console.error("Error cargando rol del usuario:", err);
+        setUserRole("teacher"); // fallback
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getUserRole();
+  }, []);
+
+  if (loading) {
+    return (
+      <Sidebar className="border-r bg-background">
+        <SidebarContent className="p-4 text-muted-foreground text-sm">
+          Cargando menú...
+        </SidebarContent>
+      </Sidebar>
+    );
+  }
 
   const getMenuItems = () => {
     const baseItems = [
@@ -132,7 +154,6 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Rol Summary Box */}
         <div className="mt-auto px-4 py-4">
           <div className="rounded-lg bg-primary/10 p-4">
             <div className="flex items-center gap-2 mb-2">
