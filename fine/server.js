@@ -19,7 +19,7 @@ app.get('/api/users', async (_req, res) => {
   }
 });
 
-// Endpoint para registrar un nuevo usuario
+// ✅ Registrar nuevo usuario
 app.post('/api/signup', async (req, res) => {
   const { name, email, password, role } = req.body;
 
@@ -39,14 +39,14 @@ app.post('/api/signup', async (req, res) => {
     );
 
     const user = { id: result.insertId, name, email, role };
-    res.status(201).json(user);
+    res.status(201).json({ success: true, user });
   } catch (err) {
-    console.error(err);
+    console.error('Error en /api/signup:', err);
     res.status(500).json({ error: 'Error en el servidor' });
   }
 });
 
-// Endpoint de login
+// ✅ Login de usuario
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -64,14 +64,14 @@ app.post('/api/login', async (req, res) => {
       return res.status(401).json({ error: 'Credenciales incorrectas' });
     }
 
-    res.json(rows[0]);
+    res.json({ success: true, user: rows[0] });
   } catch (err) {
-    console.error(err);
+    console.error('Error en /api/login:', err);
     res.status(500).json({ error: 'Error en el servidor' });
   }
 });
 
-// ✅ Nueva ruta: obtener usuario por email
+// ✅ Obtener usuario por email
 app.get('/api/user/:email', async (req, res) => {
   const { email } = req.params;
 
@@ -87,11 +87,12 @@ app.get('/api/user/:email', async (req, res) => {
 
     res.json(rows[0]);
   } catch (err) {
-    console.error(err);
+    console.error('Error en /api/user/:email:', err);
     res.status(500).json({ error: 'Error al obtener el usuario' });
   }
 });
 
+// ✅ Iniciar servidor
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en http://localhost:${PORT}`);
 });

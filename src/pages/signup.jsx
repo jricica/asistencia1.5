@@ -2,7 +2,9 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useUser } from "@/context/UserContext";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
@@ -14,6 +16,7 @@ export default function SignupForm() {
     email: "",
     password: "",
     name: "",
+    role: "teacher", // default
   });
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
@@ -24,7 +27,6 @@ export default function SignupForm() {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
 
-    // Clear error when user types
     if (errors[name]) {
       setErrors((prev) => {
         const newErrors = { ...prev };
@@ -53,15 +55,17 @@ export default function SignupForm() {
       newErrors.name = "Name is required";
     }
 
+    if (!formData.role) {
+      newErrors.role = "Role is required";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!validateForm()) return;
-
     setIsLoading(true);
 
     try {
@@ -72,10 +76,9 @@ export default function SignupForm() {
       });
 
       const data = await res.json();
+      console.log("Respuesta del backend:", data);
 
-      if (!res.ok) {
-        throw new Error(data?.error || "Signup failed");
-      }
+      if (!res.ok) throw new Error(data?.error || "Signup failed");
 
       toast({ title: "Account created", description: "Welcome!" });
       setUser(data.user ?? data);
@@ -141,6 +144,22 @@ export default function SignupForm() {
                 aria-invalid={!!errors.password}
               />
               {errors.password && <p className='text-sm text-destructive'>{errors.password}</p>}
+            </div>
+
+            <div className='space-y-2'>
+              <Label htmlFor='role'>Role</Label>
+              <select
+                id='role'
+                name='role'
+                value={formData.role}
+                onChange={handleChange}
+                disabled={isLoading}
+                className='w-full rounded border px-3 py-2'
+              >
+                <option value='teacher'>Teacher</option>
+                <option value='admin'>Admin</option>
+              </select>
+              {errors.role && <p className='text-sm text-destructive'>{errors.role}</p>}
             </div>
           </CardContent>
 
