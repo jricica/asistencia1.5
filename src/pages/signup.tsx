@@ -80,7 +80,7 @@ export default function SignupForm() {
       }
 
       toast({ title: "Account created", description: "Welcome!" });
-      setUser(data.user ?? data);
+      setUser(data.user);
       navigate("/dashboard");
     } catch (error: any) {
       toast({

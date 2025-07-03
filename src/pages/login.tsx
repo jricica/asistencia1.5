@@ -79,7 +79,7 @@ export default function LoginForm() {
       }
 
       toast({ title: "Success", description: "You are now logged in." });
-      setUser(data.user ?? data);
+      setUser(data.user);
 
       navigate("/dashboard", { replace: true });
     } catch (error: any) {
