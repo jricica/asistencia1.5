@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useUser } from "@/context/UserContext";
 import { Button } from "@/components/ui/button";
@@ -31,7 +31,6 @@ export function Header({ toggleSidebar }) {
   const { user: session } = useUser();
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
-  const [userRole, setUserRole] = useState(null);
   const { theme, setTheme } = useTheme();
   const [notifications, setNotifications] = useState([
     { id: 1, message: "New student added to Grade 3", time: "5 min ago" },
@@ -40,36 +39,7 @@ export function Header({ toggleSidebar }) {
   ]);
   const [showNotifications, setShowNotifications] = useState(false);
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const getUserRole = async () => {
-      if (!session?.email) return;
-
-      try {
-        const res = await fetch(
-          `http://localhost:3000/api/user/${session.email}`
-        );
-        if (!res.ok) throw new Error("Usuario no encontrado");
-        const user = await res.json();
-
-        if (isMounted) {
-          setUserRole(user.role);
-        }
-      } catch (error) {
-        console.error("Error fetching user role:", error);
-        if (isMounted) {
-          setUserRole("teacher");
-        }
-      }
-    };
-
-    getUserRole();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [session?.email]);
+  const userRole = session?.role;
 
   const userInitials = session?.name
     ? session.name
@@ -78,6 +48,14 @@ export function Header({ toggleSidebar }) {
         .join("")
         .toUpperCase()
     : "U";
+
+  if (!session) {
+    return (
+      <header className="sticky top-0 z-30 h-16 border-b bg-background/95 px-4 md:px-6 flex items-center">
+        <span className="text-sm text-muted-foreground">Loading...</span>
+      </header>
+    );
+  }
 
   return (
     <motion.header

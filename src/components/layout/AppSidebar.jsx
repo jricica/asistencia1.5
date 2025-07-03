@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -28,41 +27,19 @@ import { useUser } from "@/context/UserContext";
 
 export function AppSidebar() {
   const location = useLocation();
-  const [userRole, setUserRole] = useState(null);
-  const [loading, setLoading] = useState(true);
-
   const { user: session } = useUser();
 
-  useEffect(() => {
-    const getUserRole = async () => {
-      if (!session?.email) return;
-
-      try {
-        const res = await fetch(`http://localhost:3000/api/user/${session.email}`);
-        if (!res.ok) throw new Error("Usuario no encontrado");
-
-        const user = await res.json();
-        setUserRole(user.role);
-      } catch (err) {
-        console.error("Error cargando rol del usuario:", err);
-        setUserRole("teacher"); // fallback
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getUserRole();
-  }, []);
-
-  if (loading) {
+  if (!session) {
     return (
       <Sidebar className="border-r bg-background">
         <SidebarContent className="p-4 text-muted-foreground text-sm">
-          Cargando menú...
+          Loading menu...
         </SidebarContent>
       </Sidebar>
     );
   }
+
+  const userRole = session.role;
 
   const getMenuItems = () => {
     const baseItems = [
