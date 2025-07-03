@@ -81,7 +81,7 @@ export default function SignupForm() {
       if (!res.ok) throw new Error(data?.error || "Signup failed");
 
       toast({ title: "Account created", description: "Welcome!" });
-      setUser(data.user ?? data);
+      setUser(data.user);
       navigate("/dashboard");
     } catch (error) {
       toast({
