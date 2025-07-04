@@ -16,6 +16,7 @@ export default function SignupForm() {
     email: "",
     password: "",
     name: "",
+    recoveryWord: "",
     role: "teacher", // default
   });
   const [errors, setErrors] = useState({});
@@ -53,6 +54,10 @@ export default function SignupForm() {
 
     if (!formData.name) {
       newErrors.name = "Name is required";
+    }
+
+    if (!formData.recoveryWord) {
+      newErrors.recoveryWord = "Recovery word is required";
     }
 
     if (!formData.role) {
@@ -148,6 +153,22 @@ export default function SignupForm() {
                 aria-invalid={!!errors.password}
               />
               {errors.password && <p className='text-sm text-destructive'>{errors.password}</p>}
+            </div>
+
+            <div className='space-y-2'>
+              <Label htmlFor='recoveryWord'>Recovery word</Label>
+              <Input
+                id='recoveryWord'
+                name='recoveryWord'
+                placeholder='Something only you know'
+                value={formData.recoveryWord}
+                onChange={handleChange}
+                disabled={isLoading}
+                aria-invalid={!!errors.recoveryWord}
+              />
+              {errors.recoveryWord && (
+                <p className='text-sm text-destructive'>{errors.recoveryWord}</p>
+              )}
             </div>
 
             <div className='space-y-2'>
