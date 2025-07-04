@@ -166,7 +166,7 @@ export default function SignupForm() {
               <Input
                 id='recoveryWord'
                 name='recoveryWord'
-                placeholder='Your secret word'
+                placeholder='Something only you know'
                 value={formData.recoveryWord}
                 onChange={handleChange}
                 disabled={isLoading}
