@@ -96,7 +96,7 @@ const LoginForm = () => {
 
   // Demo accounts for quick login
   const demoAccounts = [
-    { role: "Admin", email: "admin@school.com", password: "admin123" },
+    { role: "Admin", email: "admin@school.com", password: "admin1234" },
     { role: "Teacher", email: "teacher@school.com", password: "teacher1234" },
     { role: "Student", email: "student@school.com", password: "student1234" }
   ];
