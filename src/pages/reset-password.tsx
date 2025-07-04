@@ -14,9 +14,9 @@ const ResetPassword = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const token = params.get("token");
+  const email = params.get("email");
 
-  if (!token) {
+  if (!email) {
     navigate("/recover-password", { replace: true });
     return null;
   }
@@ -34,10 +34,10 @@ const ResetPassword = () => {
     if (!validate()) return;
     setIsLoading(true);
     try {
-      const res = await fetch("http://localhost:3000/api/reset-password", {
+      const res = await fetch("http://localhost:3000/api/password-reset", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, password }),
+        body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Failed");

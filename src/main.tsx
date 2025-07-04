@@ -15,8 +15,7 @@ import Index from "./pages";
 import LoginForm from "./pages/login";
 import SignupForm from "./pages/signup";
 import Logout from "./pages/logout";
-import Dashboard from "./pages/dashboard";
-import StudentDashboard from "./pages/student-dashboard";
+import DashboardRouter from "./pages/dashboard-router";
 import Profile from "./pages/profile";
 import RecoverPassword from "./pages/recover-password";
 import ResetPassword from "./pages/reset-password";
@@ -56,8 +55,7 @@ createRoot(document.getElementById("root")!).render(
               <Route path="/reset-password" element={<ResetPassword />} />
 
               {/* Protected Routes */}
-              <Route path="/dashboard" element={<ProtectedRoute Component={Dashboard} roles={["teacher", "admin"]} />} />
-              <Route path="/student-dashboard" element={<ProtectedRoute Component={StudentDashboard} roles={["student"]} />} />
+              <Route path="/dashboard" element={<ProtectedRoute Component={DashboardRouter} />} />
               <Route path="/profile" element={<ProtectedRoute Component={Profile} />} />
 
               {/* Admin Routes */}

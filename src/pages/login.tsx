@@ -81,11 +81,7 @@ export default function LoginForm() {
       toast({ title: "Success", description: "You are now logged in." });
       setUser(data.user);
 
-      if (data.user.role === "student") {
-        navigate("/student-dashboard", { replace: true });
-      } else {
-        navigate("/dashboard", { replace: true });
-      }
+      navigate("/dashboard", { replace: true });
     } catch (error: any) {
       toast({
         title: "Error",

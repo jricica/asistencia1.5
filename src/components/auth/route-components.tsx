@@ -13,8 +13,8 @@ export const ProtectedRoute = ({ Component, roles }: ProtectedProps) => {
 
   if (!user) return <Navigate to='/login' />;
   if (roles && !roles.includes(user.role)) {
-    // Redirect to a default dashboard based on role
-    return <Navigate to={user.role === 'student' ? '/student-dashboard' : '/dashboard'} replace />;
+    // Redirect to dashboard for unauthorized roles
+    return <Navigate to='/dashboard' replace />;
   }
   return <Component />;
 };

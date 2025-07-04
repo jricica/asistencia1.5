@@ -139,6 +139,50 @@ app.post('/api/reset-password', async (req, res) => {
   }
 });
 
+// ✅ Nuevo flujo simple de recuperación de contraseña
+app.post('/api/password-recovery', async (req, res) => {
+  const { email, recoveryWord } = req.body;
+  if (!email || !recoveryWord) {
+    return res.status(400).json({ error: 'Faltan campos' });
+  }
+
+  try {
+    const [rows] = await db.query(
+      'SELECT id FROM users WHERE email = ? AND recoveryWord = ?',
+      [email, recoveryWord]
+    );
+
+    if (rows.length === 0) {
+      return res.status(401).json({ error: 'Datos incorrectos' });
+    }
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error en el servidor' });
+  }
+});
+
+app.post('/api/password-reset', async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Faltan campos' });
+  }
+
+  try {
+    const [result] = await db.query('UPDATE users SET password = ? WHERE email = ?', [password, email]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error en el servidor' });
+  }
+});
+
 // ✅ Ruta protegida para listar todos los usuarios
 app.get('/api/users', isAuthenticated, async (_req, res) => {
   try {

@@ -12,9 +12,8 @@ import Index from "./pages";
 import LoginForm from "./pages/login";
 import SignupForm from "./pages/signup";
 import Logout from "./pages/logout";
-import Dashboard from "./pages/dashboard";
-import StudentDashboard from "./pages/student-dashboard";
-import PasswordRecovery from "./pages/password-recovery";
+import DashboardRouter from "./pages/dashboard-router";
+import RecoverPassword from "./pages/recover-password";
 import Profile from "./pages/profile";
 
 // Admin Pages
@@ -46,11 +45,10 @@ createRoot(document.getElementById("root")).render(
             <Route path="/login" element={<LoginForm />} />
             <Route path="/signup" element={<SignupForm />} />
             <Route path="/logout" element={<Logout />} />
-            <Route path="/password-recovery" element={<PasswordRecovery />} />
+            <Route path="/recover-password" element={<RecoverPassword />} />
             
             {/* Protected Routes */}
-            <Route path="/dashboard" element={<ProtectedRoute Component={Dashboard} roles={["teacher", "admin"]} />} />
-            <Route path="/student-dashboard" element={<ProtectedRoute Component={StudentDashboard} roles={["student"]} />} />
+            <Route path="/dashboard" element={<ProtectedRoute Component={DashboardRouter} />} />
             <Route path="/profile" element={<ProtectedRoute Component={Profile} />} />
             
             {/* Admin Routes */}
