@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import { v4 as uuidv4 } from 'uuid';
 import { db } from './fine/db.js';
 
 const app = express();
@@ -8,6 +9,10 @@ const IS_DEV = process.env.NODE_ENV !== 'production';
 
 app.use(cors());
 app.use(express.json());
+
+// Simple in-memory store for recovery tokens
+const recoveryTokens = new Map();
+const TOKEN_EXPIRY_MS = 15 * 60 * 1000;
 
 // 🔒 Middleware simple de autenticación
 export const isAuthenticated = async (req, res, next) => {
@@ -55,8 +60,8 @@ app.post('/api/login', async (req, res) => {
 
 // 🔐 SIGNUP
 app.post('/api/signup', async (req, res) => {
-  const { name, email, password, role } = req.body;
-  if (!name || !email || !password || !role) {
+  const { name, email, password, recoveryWord, role } = req.body;
+  if (!name || !email || !password || !role || !recoveryWord) {
     return res.status(400).json({ error: 'Faltan campos' });
   }
 
@@ -72,12 +77,62 @@ app.post('/api/signup', async (req, res) => {
     }
 
     const [result] = await db.query(
-      'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
-      [name, email, password, role]
+      'INSERT INTO users (name, email, password, recoveryWord, role) VALUES (?, ?, ?, ?, ?)',
+      [name, email, password, recoveryWord, role]
     );
 
     const user = { id: result.insertId, name, email, role };
     res.status(201).json({ user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error en el servidor' });
+  }
+});
+
+// 🔑 Verify recovery word and generate token
+app.post('/api/recover-password', async (req, res) => {
+  const { email, recoveryWord } = req.body;
+  if (!email || !recoveryWord) {
+    return res.status(400).json({ error: 'Faltan campos' });
+  }
+
+  try {
+    const [rows] = await db.query(
+      'SELECT id FROM users WHERE email = ? AND recoveryWord = ?',
+      [email, recoveryWord]
+    );
+
+    if (rows.length === 0) {
+      return res.status(401).json({ error: 'Datos incorrectos' });
+    }
+
+    const token = uuidv4();
+    recoveryTokens.set(token, rows[0].id);
+    setTimeout(() => recoveryTokens.delete(token), TOKEN_EXPIRY_MS);
+
+    res.json({ token });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error en el servidor' });
+  }
+});
+
+// 🔄 Reset password with valid token
+app.post('/api/reset-password', async (req, res) => {
+  const { token, password } = req.body;
+  if (!token || !password) {
+    return res.status(400).json({ error: 'Faltan campos' });
+  }
+
+  const userId = recoveryTokens.get(token);
+  if (!userId) {
+    return res.status(400).json({ error: 'Token inválido' });
+  }
+
+  try {
+    await db.query('UPDATE users SET password = ? WHERE id = ?', [password, userId]);
+    recoveryTokens.delete(token);
+    res.json({ success: true });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error en el servidor' });

@@ -18,7 +18,8 @@ import Logout from "./pages/logout";
 import Dashboard from "./pages/dashboard";
 import StudentDashboard from "./pages/student-dashboard";
 import Profile from "./pages/profile";
-import PasswordRecovery from "./pages/password-recovery";
+import RecoverPassword from "./pages/recover-password";
+import ResetPassword from "./pages/reset-password";
 
 // Admin Pages
 import AdminTeachers from "./pages/admin/teachers";
@@ -51,7 +52,8 @@ createRoot(document.getElementById("root")!).render(
               <Route path="/login" element={<LoginForm />} />
               <Route path="/signup" element={<SignupForm />} />
               <Route path="/logout" element={<Logout />} />
-              <Route path="/password-recovery" element={<PasswordRecovery />} />
+              <Route path="/recover-password" element={<RecoverPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
 
               {/* Protected Routes */}
               <Route path="/dashboard" element={<ProtectedRoute Component={Dashboard} roles={["teacher", "admin"]} />} />
