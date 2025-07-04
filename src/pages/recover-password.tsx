@@ -45,7 +45,7 @@ const RecoverPassword = () => {
     if (!validate()) return;
     setIsLoading(true);
     try {
-      const res = await fetch("http://localhost:3000/api/password-recovery", {
+      const res = await fetch("http://localhost:3000/api/recover-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
