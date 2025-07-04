@@ -4,11 +4,12 @@ import { db } from './fine/db.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const IS_DEV = process.env.NODE_ENV !== 'production';
 
 app.use(cors());
 app.use(express.json());
 
-// Simple authentication middleware using user id header
+// 🔒 Middleware simple de autenticación
 export const isAuthenticated = async (req, res, next) => {
   const userIdHeader = req.header('authorization');
   const userId = parseInt(userIdHeader, 10);
@@ -31,6 +32,7 @@ export const isAuthenticated = async (req, res, next) => {
   }
 };
 
+// 🔐 LOGIN
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -51,24 +53,29 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
+// 🔐 SIGNUP
 app.post('/api/signup', async (req, res) => {
   const { name, email, password, role } = req.body;
   if (!name || !email || !password || !role) {
     return res.status(400).json({ error: 'Faltan campos' });
   }
+
   const allowedRoles = ['teacher', 'student', 'admin'];
   if (!allowedRoles.includes(role)) {
     return res.status(400).json({ error: 'Rol inválido' });
   }
+
   try {
     const [exists] = await db.query('SELECT id FROM users WHERE email = ?', [email]);
     if (exists.length) {
       return res.status(400).json({ error: 'El email ya existe' });
     }
+
     const [result] = await db.query(
       'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
       [name, email, password, role]
     );
+
     const user = { id: result.insertId, name, email, role };
     res.status(201).json({ user });
   } catch (err) {
@@ -77,6 +84,7 @@ app.post('/api/signup', async (req, res) => {
   }
 });
 
+// ✅ Ruta protegida para listar todos los usuarios
 app.get('/api/users', isAuthenticated, async (_req, res) => {
   try {
     const [rows] = await db.query('SELECT id, name, email, role FROM users');
@@ -87,23 +95,35 @@ app.get('/api/users', isAuthenticated, async (_req, res) => {
   }
 });
 
+// ✅ Ruta protegida para obtener un usuario por email
 app.get('/api/user/:email', isAuthenticated, async (req, res) => {
   const { email } = req.params;
   try {
-    const [rows] = await db.query(
-      'SELECT id, name, email, role FROM users WHERE email = ?',
-      [email]
-    );
+    const [rows] = await db.query('SELECT id, name, email, role FROM users WHERE email = ?', [email]);
     if (rows.length === 0) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
     res.json(rows[0]);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Error al obtener el usuario' });
+    res.status(500).json({ error: 'Database error' });
   }
 });
 
+// 🐛 Ruta pública de desarrollo para ver usuarios sin autenticación
+if (IS_DEV) {
+  app.get('/api/debug/users', async (_req, res) => {
+    try {
+      const [rows] = await db.query('SELECT * FROM users');
+      res.json(rows);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Error en modo debug' });
+    }
+  });
+}
+
+// 🚀 Iniciar servidor
 app.listen(PORT, () => {
-  console.log(`Servidor escuchando en http://localhost:${PORT}`);
+  console.log(`✅ Servidor escuchando en http://localhost:${PORT}`);
 });
