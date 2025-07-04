@@ -82,11 +82,7 @@ const LoginForm = () => {
 
       toast({ title: "Success", description: "You are now logged in." });
       setUser(data.user);
-      if (data.user.role === "student") {
-        navigate("/student-dashboard");
-      } else {
-        navigate("/dashboard");
-      }
+      navigate("/dashboard");
     } catch (error) {
       toast({
         title: "Error",
@@ -177,7 +173,7 @@ const LoginForm = () => {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password">Password</Label>
-                    <Link to="/password-recovery" className="text-sm text-primary hover:underline">
+                    <Link to="/recover-password" className="text-sm text-primary hover:underline">
                       Forgot password?
                     </Link>
                   </div>

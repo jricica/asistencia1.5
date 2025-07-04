@@ -87,11 +87,7 @@ export default function SignupForm() {
 
       toast({ title: "Account created", description: "Welcome!" });
       setUser(data.user);
-      if (data.user.role === "student") {
-        navigate("/student-dashboard");
-      } else {
-        navigate("/dashboard");
-      }
+      navigate("/dashboard");
     } catch (error) {
       toast({
         title: "Error",
@@ -181,7 +177,7 @@ export default function SignupForm() {
                 disabled={isLoading}
                 className='w-full rounded border px-3 py-2'
               >
-                <option value='teacher'>Admin</option>
+                <option value='admin'>Admin</option>
                 <option value='teacher'>Teacher</option>
                 <option value='student'>Student</option>
               </select>

@@ -6,7 +6,7 @@ export const ProtectedRoute = ({ Component, roles }) => {
 
     if (!user) return <Navigate to='/login' />;
     if (roles && !roles.includes(user.role)) {
-        return <Navigate to={user.role === 'student' ? '/student-dashboard' : '/dashboard'} replace />;
+        return <Navigate to='/dashboard' replace />;
     }
 
     return <Component />;

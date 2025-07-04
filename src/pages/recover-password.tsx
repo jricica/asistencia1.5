@@ -45,14 +45,14 @@ const RecoverPassword = () => {
     if (!validate()) return;
     setIsLoading(true);
     try {
-      const res = await fetch("http://localhost:3000/api/recover-password", {
+      const res = await fetch("http://localhost:3000/api/password-recovery", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Invalid data");
-      navigate(`/reset-password?token=${data.token}`);
+      navigate(`/reset-password?email=${encodeURIComponent(formData.email)}`);
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     } finally {
