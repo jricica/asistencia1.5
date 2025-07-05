@@ -2,8 +2,8 @@
 import mysql from 'mysql2/promise';
 
 export const db = mysql.createPool({
-  host: '',
-  user: '',
-  password: '', 
-  database: '',
+  host: 'localhost',
+  user: 'root',
+  password: 'Xapkib/Mriya2004', 
+  database: 'escuela',
 });

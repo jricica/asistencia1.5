@@ -97,7 +97,7 @@ app.get('/api/user/:email', async (req, res) => {
   }
 });
 
-// ✅ Iniciar servidor
+
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en http://localhost:${PORT}`);
 });
