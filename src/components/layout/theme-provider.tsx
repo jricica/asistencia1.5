@@ -1,3 +1,4 @@
+// ⚠️ Archivo migrado a JSX. No usar este `.tsx`.
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import * as React from "react";
 

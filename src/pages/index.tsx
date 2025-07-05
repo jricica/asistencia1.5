@@ -1,3 +1,4 @@
+// ⚠️ Archivo migrado a JSX. No usar este `.tsx`.
 // Update this page (the content is just a fallback if you fail to update the page). Always include w-full and min-h-screen classes in the main element.
 const Index = () => {
   return (

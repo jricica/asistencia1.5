@@ -1,3 +1,4 @@
+// ⚠️ Archivo migrado a JSX. No usar este `.tsx`.
 "use client"
 
 import { Navigate } from "react-router-dom";

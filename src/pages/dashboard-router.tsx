@@ -1,3 +1,4 @@
+// ⚠️ Archivo migrado a JSX. No usar este `.tsx`.
 import Dashboard from './dashboard';
 import StudentDashboard from './student-dashboard';
 import { useUser } from '@/context/UserContext';

@@ -1,3 +1,4 @@
+// ⚠️ Archivo migrado a JSX. No usar este `.tsx`.
 import type React from "react";
 
 import { useState } from "react";

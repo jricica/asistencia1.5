@@ -1,3 +1,4 @@
+// ⚠️ Archivo migrado a JSX. No usar este `.tsx`.
 //use this component to create a sidebar for your application
 // place it in main.tsx file
 //adjust the items based on route paths

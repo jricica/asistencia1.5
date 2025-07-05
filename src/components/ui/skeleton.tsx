@@ -1,3 +1,4 @@
+// ⚠️ Archivo migrado a JSX. No usar este `.tsx`.
 import { cn } from "@/lib/utils"
 
 function Skeleton({
