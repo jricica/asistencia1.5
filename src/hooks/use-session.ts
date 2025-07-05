@@ -1,3 +1,4 @@
+// ⚠️ Archivo migrado a JS. No usar este `.ts`.
 import { useUser } from "@/context/UserContext";
 
 export function useSession() {

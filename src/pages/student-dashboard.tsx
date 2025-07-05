@@ -1,3 +1,4 @@
+// ⚠️ Archivo migrado a JSX. No usar este `.tsx`.
 import { DashboardLayout } from "@/components/layout/Dashboard";
 import { useUser } from "@/context/UserContext";
 

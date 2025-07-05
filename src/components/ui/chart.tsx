@@ -1,3 +1,4 @@
+// ⚠️ Archivo migrado a JSX. No usar este `.tsx`.
 import * as React from "react";
 import * as RechartsPrimitive from "recharts";
 

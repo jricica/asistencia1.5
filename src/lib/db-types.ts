@@ -1,3 +1,4 @@
+// ⚠️ Archivo migrado a JS. No usar este `.ts`.
 export type Schema = {
   users: { 
     id?: number, 

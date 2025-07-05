@@ -1,3 +1,4 @@
+// ⚠️ Archivo migrado a JSX. No usar este `.tsx`.
 import { useTheme } from "next-themes"
 import { Toaster as Sonner } from "sonner"
 

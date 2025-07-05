@@ -1,3 +1,4 @@
+// ⚠️ Archivo migrado a JS. No usar este `.ts`.
 import * as React from "react"
 
 import type {
