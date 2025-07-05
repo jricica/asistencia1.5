@@ -53,5 +53,5 @@ El script de migración crea un usuario administrador por defecto (`admin@school
 - `npm run lint` &mdash; ejecuta ESLint sobre el código.
 
 ## 📂 Producción
-Para un despliegue en producción ejecuta `npm run build` y sirve los archivos resultantes del directorio `dist`. El servidor Express puede correr de manera independiente ejecutando `node server.js`.
+Para un despliegue en producción ejecuta `npm run dev` y sirve los archivos resultantes del directorio `dist`. El servidor Express puede correr de manera independiente ejecutando `node server.js`.
 
