@@ -12,7 +12,7 @@ Aplicación web para la gestión de asistencia escolar con diferentes roles de u
 - Interfaz en React + TypeScript con Tailwind.
 
 ## 🚀 Tecnologías utilizadas
-- **Frontend:** React, TypeScript y Tailwind
+- **Frontend:** React, JSX (JavaScript) y Tailwind
 - **Backend:** Node.js y Express
 - **Base de datos:** MySQL
 - **Autenticación:** headers personalizados
