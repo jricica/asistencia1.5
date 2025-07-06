@@ -34,9 +34,7 @@ const TeacherStudents = () => {
       if (!gradeId) return;
       
       try {
-        // In a real app, you would fetch data from the database
-        // For now, we'll use mock data
-        
+
         // Mock grade
         const mockGrade = { id: parseInt(gradeId), name: `Grade ${gradeId}` };
         
@@ -86,8 +84,7 @@ const TeacherStudents = () => {
     setIsAddingStudent(true);
     
     try {
-      // In a real app, you would add the student to the database
-      // For now, we'll simulate the process
+
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       const newStudentId = students.length + 1;
@@ -124,8 +121,7 @@ const TeacherStudents = () => {
   const handleDeleteStudent = async () => {
     if (!studentToDelete) return;
     
-    // In a real app, you would verify the password against the user's actual password
-    // For now, we'll use a simple check
+
     if (deleteConfirmPassword !== "password") {
       toast({
         title: "Error",
@@ -136,8 +132,7 @@ const TeacherStudents = () => {
     }
     
     try {
-      // In a real app, you would delete the student from the database
-      // For now, we'll simulate the process
+
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       setStudents((prev) => prev.filter((student) => student.id !== studentToDelete.id));

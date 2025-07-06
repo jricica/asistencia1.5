@@ -25,8 +25,7 @@ const AdminProjections = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // In a real app, you would fetch data from the database
-        // For now, we'll use mock data
+
         
         // Mock levels
         const mockLevels = [

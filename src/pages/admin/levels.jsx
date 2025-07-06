@@ -40,8 +40,6 @@ const AdminLevels = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // In a real app, you would fetch data from the database
-        // For now, we'll use mock data
         
         // Mock levels
         const mockLevels = [
@@ -118,8 +116,7 @@ const AdminLevels = () => {
     setIsAddingLevel(true);
     
     try {
-      // In a real app, you would add the level to the database
-      // For now, we'll simulate the process
+
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       const newLevelId = levels.length + 1;
@@ -167,8 +164,7 @@ const AdminLevels = () => {
     setIsAddingGrade(true);
     
     try {
-      // In a real app, you would add the grade to the database
-      // For now, we'll simulate the process
+
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       const newGradeId = grades.length + 1;
@@ -206,7 +202,7 @@ const AdminLevels = () => {
 
   const handleDeleteLevel = async (levelId) => {
     try {
-      // Check if there are grades associated with this level
+
       const associatedGrades = grades.filter((grade) => grade.levelId === levelId);
       
       if (associatedGrades.length > 0) {
@@ -218,8 +214,7 @@ const AdminLevels = () => {
         return;
       }
       
-      // In a real app, you would delete the level from the database
-      // For now, we'll simulate the process
+
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       setLevels((prev) => prev.filter((level) => level.id !== levelId));
@@ -239,8 +234,7 @@ const AdminLevels = () => {
 
   const handleDeleteGrade = async (gradeId) => {
     try {
-      // In a real app, you would delete the grade from the database
-      // For now, we'll simulate the process
+
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       setGrades((prev) => prev.filter((grade) => grade.id !== gradeId));

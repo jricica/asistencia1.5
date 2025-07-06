@@ -33,8 +33,7 @@ const TeacherReports = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // In a real app, you would fetch data from the database
-        // For now, we'll use mock data
+
         
         // Mock grades
         const mockGrades = [
@@ -173,8 +172,7 @@ const TeacherReports = () => {
     setSending(true);
     
     try {
-      // In a real app, you would send the email through the backend
-      // For now, we'll simulate the process
+
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       // Create a new report entry

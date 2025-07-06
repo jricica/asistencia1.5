@@ -47,8 +47,7 @@ useEffect(() => {
             headers: { Authorization: String(session.id) }
           });
         }
-        // In a real app, you would fetch actual data from the database
-        // For now, we'll use mock data
+
         
         // Mock attendance by level data
         const mockAttendanceByLevel = [

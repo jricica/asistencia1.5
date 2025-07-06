@@ -21,8 +21,7 @@ const TeacherGrades = () => {
       if (!session) return;
       
       try {
-        // In a real app, you would fetch the teacher's data from the database
-        // For now, we'll simulate the process
+
         
         // Mock teacher data
         const mockTeacherId = 1;

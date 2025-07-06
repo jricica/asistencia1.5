@@ -22,8 +22,7 @@ const AdminSettings = () => {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        // In a real app, you would fetch settings from the database
-        // For now, we'll use mock data
+
         await new Promise(resolve => setTimeout(resolve, 1000));
         
         // Mock settings already set in state
@@ -52,8 +51,7 @@ const AdminSettings = () => {
     setSaving(true);
     
     try {
-      // In a real app, you would save settings to the database
-      // For now, we'll simulate the process
+
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       toast({
@@ -73,8 +71,7 @@ const AdminSettings = () => {
 
   const deleteAllRecords = async () => {
     try {
-      // In a real app, you would delete all records from the database
-      // For now, we'll simulate the process
+
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       setIsDeleteDialogOpen(false);

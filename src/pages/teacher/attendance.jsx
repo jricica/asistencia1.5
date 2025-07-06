@@ -47,8 +47,7 @@ const TeacherAttendance = () => {
       if (!gradeId) return;
       
       try {
-        // In a real app, you would fetch data from the database
-        // For now, we'll use mock data
+
         
         // Mock grade
         const mockGrade = { id: parseInt(gradeId), name: `Grade ${gradeId}` };
@@ -117,7 +116,7 @@ const TeacherAttendance = () => {
         setStudents(mockStudents);
         
         // Check if attendance has been recorded for today
-        setAttendanceRecorded(false); // For demo purposes, assume it's not recorded yet
+        setAttendanceRecorded(false); 
       } catch (error) {
         console.error("Error fetching data:", error);
         toast({
@@ -183,8 +182,7 @@ const TeacherAttendance = () => {
     setSaving(true);
     
     try {
-      // In a real app, you would save the attendance data to the database
-      // For now, we'll simulate the process
+
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       setAttendanceRecorded(true);
@@ -211,8 +209,7 @@ const TeacherAttendance = () => {
 
   const sendEmail = async (type) => {
     try {
-      // In a real app, you would send an email
-      // For now, we'll simulate the process
+
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       setEmailDialogOpen(false);

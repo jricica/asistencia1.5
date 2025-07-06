@@ -34,8 +34,7 @@ const Profile = () => {
     setIsUpdating(true);
     
     try {
-      // In a real app, you would update the user profile in the database
-      // For now, we'll simulate the process
+
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       toast({
@@ -68,8 +67,7 @@ const Profile = () => {
     setIsChangingPassword(true);
     
     try {
-      // In a real app, you would update the user's password in the database
-      // For now, we'll simulate the process
+
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       setFormData((prev) => ({

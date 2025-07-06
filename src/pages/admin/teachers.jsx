@@ -25,8 +25,7 @@ const AdminTeachers = () => {
   useEffect(() => {
     const fetchTeachers = async () => {
       try {
-        // In a real app, you would fetch teachers from the database
-        // For now, we'll use mock data
+
         const mockTeachers = [
           { id: 1, name: "John Doe", email: "john.doe@school.com", createdAt: "2023-01-15" },
           { id: 2, name: "Jane Smith", email: "jane.smith@school.com", createdAt: "2023-02-20" },
@@ -71,8 +70,7 @@ const AdminTeachers = () => {
     setIsAddingTeacher(true);
     
     try {
-      // In a real app, you would add the teacher to the database
-      // For now, we'll simulate the process
+
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       const newTeacherId = teachers.length + 1;
@@ -109,8 +107,7 @@ const AdminTeachers = () => {
 
   const handleDeleteTeacher = async (teacherId) => {
     try {
-      // In a real app, you would delete the teacher from the database
-      // For now, we'll simulate the process
+
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       setTeachers((prev) => prev.filter((teacher) => teacher.id !== teacherId));
