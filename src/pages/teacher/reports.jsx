@@ -133,17 +133,18 @@ const TeacherReports = () => {
   };
 
   const getFilteredReports = () => {
-    return reports.filter(report => {
+    return reports.filter((report) => {
       const matchesSearch = searchQuery
         ? report.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
           report.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
           report.message.toLowerCase().includes(searchQuery.toLowerCase())
         : true;
-      
-      const matchesStudent = selectedStudent
-        ? report.studentId === parseInt(selectedStudent)
-        : true;
-      
+
+      const matchesStudent =
+        selectedStudent && selectedStudent !== "all"
+          ? report.studentId === parseInt(selectedStudent)
+          : true;
+
       return matchesSearch && matchesStudent;
     });
   };
@@ -160,7 +161,7 @@ const TeacherReports = () => {
       return;
     }
     
-    if (!selectedGrade && !selectedStudent) {
+    if (!selectedGrade && (!selectedStudent || selectedStudent === "all")) {
       toast({
         title: "Error",
         description: "Please select a grade or student.",
@@ -178,10 +179,14 @@ const TeacherReports = () => {
       // Create a new report entry
       const newReport = {
         id: reports.length + 1,
-        studentId: selectedStudent ? parseInt(selectedStudent) : null,
-        studentName: selectedStudent
-          ? students.find(s => s.id === parseInt(selectedStudent))?.name
-          : `All students in ${grades.find(g => g.id === parseInt(selectedGrade))?.name}`,
+        studentId:
+          selectedStudent && selectedStudent !== "all"
+            ? parseInt(selectedStudent)
+            : null,
+        studentName:
+          selectedStudent && selectedStudent !== "all"
+            ? students.find((s) => s.id === parseInt(selectedStudent))?.name
+            : `All students in ${grades.find((g) => g.id === parseInt(selectedGrade))?.name}`,
         type: emailForm.type,
         subject: emailForm.subject,
         message: emailForm.message,
@@ -258,7 +263,6 @@ const TeacherReports = () => {
                             <SelectValue placeholder="Select a grade" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Select a grade</SelectItem>
                             {grades.map((grade) => (
                               <SelectItem key={grade.id} value={grade.id.toString()}>
                                 {grade.name}
@@ -279,7 +283,7 @@ const TeacherReports = () => {
                             <SelectValue placeholder="All students in grade" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">All students in grade</SelectItem>
+                            <SelectItem value="all">All students in grade</SelectItem>
                             {getFilteredStudents().map((student) => (
                               <SelectItem key={student.id} value={student.id.toString()}>
                                 {student.name}
@@ -301,9 +305,9 @@ const TeacherReports = () => {
                         <DialogHeader>
                           <DialogTitle>Compose Email</DialogTitle>
                           <DialogDescription>
-                            Send an email to {selectedStudent
-                              ? students.find(s => s.id === parseInt(selectedStudent))?.name
-                              : `all students in ${grades.find(g => g.id === parseInt(selectedGrade))?.name}`
+                            Send an email to {selectedStudent && selectedStudent !== "all"
+                              ? students.find((s) => s.id === parseInt(selectedStudent))?.name
+                              : `all students in ${grades.find((g) => g.id === parseInt(selectedGrade))?.name}`
                             }
                           </DialogDescription>
                         </DialogHeader>
@@ -415,7 +419,7 @@ const TeacherReports = () => {
                           <SelectValue placeholder="Filter by student" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All Students</SelectItem>
+                          <SelectItem value="all">All Students</SelectItem>
                           {students.map((student) => (
                             <SelectItem key={student.id} value={student.id.toString()}>
                               {student.name}
