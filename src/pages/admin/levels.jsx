@@ -60,18 +60,13 @@ const AdminLevels = () => {
           { id: 7, name: "Grade 10", levelId: 3, teacherId: null },
         ];
         
-        // Mock teachers
-        const mockTeachers = [
-          { id: 1, name: "John Doe" },
-          { id: 2, name: "Jane Smith" },
-          { id: 3, name: "Robert Johnson" },
-          { id: 4, name: "Emily Davis" },
-          { id: 5, name: "Michael Wilson" },
-        ];
-        
         setLevels(mockLevels);
         setGrades(mockGrades);
-        setTeachers(mockTeachers);
+
+        const res = await fetch('/api/teachers');
+        if (!res.ok) throw new Error('Failed to fetch teachers');
+        const teachersData = await res.json();
+        setTeachers(teachersData);
       } catch (error) {
         console.error("Error fetching data:", error);
         toast({
@@ -412,11 +407,12 @@ const AdminLevels = () => {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="unassigned">Not Assigned</SelectItem>
-                            {teachers.map((teacher) => (
-                              <SelectItem key={teacher.id} value={teacher.id.toString()}>
-                                {teacher.name}
-                              </SelectItem>
-                            ))}
+                            {!loading &&
+                              teachers.map((teacher) => (
+                                <SelectItem key={teacher.id} value={teacher.id.toString()}>
+                                  {teacher.name}
+                                </SelectItem>
+                              ))}
                           </SelectContent>
                         </Select>
                       </div>
