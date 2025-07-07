@@ -22,18 +22,28 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Marcar asistencia
+// ✅ Marcar asistencia para múltiples estudiantes
 router.post("/", async (req, res) => {
-  const { studentId, date, status } = req.body;
-  if (!studentId || !date || !status) {
+  const { gradeId, date, students } = req.body;
+
+  if (!gradeId || !date || !Array.isArray(students)) {
     return res.status(400).json({ error: "Faltan campos" });
   }
+
   try {
-    const [result] = await db.query(
-      "INSERT INTO attendance (studentId, date, status) VALUES (?, ?, ?)",
-      [studentId, date, status]
+    const insertPromises = students.map((student) =>
+    db.query(
+        `INSERT INTO attendance (studentId, date, status) 
+        VALUES (?, ?, ?)
+        ON DUPLICATE KEY UPDATE status = VALUES(status)`,
+        [student.id, date, student.status]
+    )
     );
-    res.status(201).json({ id: result.insertId, studentId, date, status });
+
+
+    await Promise.all(insertPromises);
+
+    res.status(201).json({ message: "Asistencia registrada con éxito" });
   } catch (err) {
     console.error("Error al registrar asistencia:", err);
     res.status(500).json({ error: "Error interno del servidor" });

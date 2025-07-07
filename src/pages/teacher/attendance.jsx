@@ -17,7 +17,8 @@ const API_BASE_URL = "http://localhost:3000/api";
 import { 
   Loader2, ArrowLeft, Check, X, Mail, Clock, Save, 
   AlertTriangle, CheckCircle2, XCircle, AlertCircle, 
-  Calendar, Search, Filter, RefreshCw
+  Calendar, Search, Filter, RefreshCw,
+  Shirt
 } from "lucide-react";
 
 const TeacherAttendance = () => {
@@ -58,7 +59,19 @@ const TeacherAttendance = () => {
         const studentsData = await studentsRes.json();
 
         setGrade(gradeData);
-        setStudents(studentsData);
+        setStudents(
+          studentsData.map(student => ({
+            ...student,
+            status: student.status || "present",
+            uniform: student.uniform || {
+              shoes: false,
+              shirt: false,
+              pants: false,
+              sweater: false,
+              haircut: false,
+            },
+          }))
+        )
         
         // Check if attendance has been recorded for today
         setAttendanceRecorded(false); 
@@ -124,39 +137,55 @@ const TeacherAttendance = () => {
   };
 
   const saveAttendance = async () => {
-    setSaving(true);
+  setSaving(true);
 
-    try {
-      const body = {
-        gradeId: parseInt(gradeId),
-        date: attendanceDate,
-        students,
-      };
-      console.log('Attendance payload:', body);
-      const res = await fetch(`${API_BASE_URL}/attendance`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
+  try {
+    // Limpieza de los estudiantes para evitar errores de formato
+    const cleanStudents = students.map((student) => ({
+      id: student.id,
+      status: student.status || "present",
+      uniform: {
+        shoes: !!student.uniform?.shoes,
+        shirt: !!student.uniform?.shirt,
+        pants: !!student.uniform?.pants,
+        sweater: !!student.uniform?.sweater,
+        haircut: !!student.uniform?.haircut,
+      },
+    }));
 
-      if (!res.ok) throw new Error("Failed to save attendance");
+    const body = {
+      gradeId: parseInt(gradeId),
+      date: attendanceDate,
+      students: cleanStudents,
+    };
 
-      setAttendanceRecorded(true);
-      
-      toast({
-        title: "Success",
-        description: "Attendance saved successfully.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to save attendance. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
+    console.log("Attendance payload:", body); // 💬 Revisa en consola
+
+    const res = await fetch(`${API_BASE_URL}/attendance`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) throw new Error("Failed to save attendance");
+
+    setAttendanceRecorded(true);
+
+    toast({
+      title: "Success",
+      description: "Attendance saved successfully.",
+    });
+  } catch (error) {
+    toast({
+      title: "Error",
+      description: "Failed to save attendance. Please try again.",
+      variant: "destructive",
+    });
+  } finally {
+    setSaving(false);
+  }
+};
+
 
   const openEmailDialog = (student) => {
     setSelectedStudent(student);
@@ -594,7 +623,7 @@ const TeacherAttendance = () => {
                                     <TableCell key={item.id} className="text-center">
                                       <div className="flex justify-center">
                                         <Checkbox
-                                          checked={student.uniform[item.id]}
+                                          checked={student.uniform[item.id] ?? false}
                                           onCheckedChange={(checked) =>
                                             handleUniformChange(student.id, item.id, checked)
                                           }
