@@ -5,13 +5,18 @@ import { db } from "../fine/db.js";
 const router = express.Router();
 
 // Obtener todos los estudiantes
-router.get("/", async (_req, res) => {
+router.get("/", async (req, res) => {
   try {
-    const [rows] = await db.query(
-      `SELECT students.id, students.name, students.email, grades.name AS grade
+    let query =
+      `SELECT students.id, students.name, students.email, students.gradeId, grades.name AS grade
        FROM students
-       JOIN grades ON students.gradeId = grades.id`
-    );
+       JOIN grades ON students.gradeId = grades.id`;
+    const params = [];
+    if (req.query.gradeId) {
+      query += " WHERE students.gradeId = ?";
+      params.push(req.query.gradeId);
+    }
+    const [rows] = await db.query(query, params);
     res.json(rows);
   } catch (err) {
     console.error("Error al obtener estudiantes:", err);

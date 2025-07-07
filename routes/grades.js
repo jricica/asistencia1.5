@@ -8,7 +8,8 @@ const router = express.Router();
 router.get("/", async (_req, res) => {
   try {
     const [rows] = await db.query(
-      `SELECT grades.id, grades.name, levels.name AS level, users.name AS teacher
+      `SELECT grades.id, grades.name, grades.levelId, grades.teacherId,
+              levels.name AS levelName, users.name AS teacherName
        FROM grades
        JOIN levels ON grades.levelId = levels.id
        LEFT JOIN users ON grades.teacherId = users.id`
@@ -16,6 +17,27 @@ router.get("/", async (_req, res) => {
     res.json(rows);
   } catch (err) {
     console.error("Error al obtener grados:", err);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
+
+// Obtener grado por id
+router.get("/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [rows] = await db.query(
+      `SELECT grades.id, grades.name, grades.levelId, grades.teacherId,
+              levels.name AS levelName, users.name AS teacherName
+       FROM grades
+       JOIN levels ON grades.levelId = levels.id
+       LEFT JOIN users ON grades.teacherId = users.id
+       WHERE grades.id = ?`,
+      [id]
+    );
+    if (rows.length === 0) return res.status(404).json({ error: "No encontrado" });
+    res.json(rows[0]);
+  } catch (err) {
+    console.error("Error al obtener grado:", err);
     res.status(500).json({ error: "Error interno del servidor" });
   }
 });
