@@ -26,8 +26,8 @@ const AdminLevels = () => {
   
   const [newGrade, setNewGrade] = useState({
     name: "",
-    levelId: "",
-    teacherId: "",
+    levelId: "default",
+    teacherId: "unassigned",
   });
   
   const [isAddingLevel, setIsAddingLevel] = useState(false);
@@ -152,7 +152,7 @@ const AdminLevels = () => {
   const handleAddGrade = async (e) => {
     e.preventDefault();
     
-    if (!newGrade.name || !newGrade.levelId) {
+    if (!newGrade.name || newGrade.levelId === "default") {
       toast({
         title: "Error",
         description: "Please fill in all required fields.",
@@ -172,15 +172,18 @@ const AdminLevels = () => {
         id: newGradeId,
         ...newGrade,
         levelId: parseInt(newGrade.levelId),
-        teacherId: newGrade.teacherId ? parseInt(newGrade.teacherId) : null,
+        teacherId:
+          newGrade.teacherId && newGrade.teacherId !== "unassigned"
+            ? parseInt(newGrade.teacherId)
+            : null,
       };
       
       setGrades((prev) => [...prev, newGradeWithId]);
       
       setNewGrade({
         name: "",
-        levelId: "",
-        teacherId: "",
+        levelId: "default",
+        teacherId: "unassigned",
       });
       
       setIsGradeDialogOpen(false);
@@ -385,6 +388,9 @@ const AdminLevels = () => {
                             <SelectValue placeholder="Select a level" />
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectItem value="default" disabled>
+                              Select a level
+                            </SelectItem>
                             {levels.map((level) => (
                               <SelectItem key={level.id} value={level.id.toString()}>
                                 {level.name}
@@ -405,7 +411,7 @@ const AdminLevels = () => {
                             <SelectValue placeholder="Select a teacher" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Not Assigned</SelectItem>
+                            <SelectItem value="unassigned">Not Assigned</SelectItem>
                             {teachers.map((teacher) => (
                               <SelectItem key={teacher.id} value={teacher.id.toString()}>
                                 {teacher.name}
