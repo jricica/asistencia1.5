@@ -12,6 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
+
+const API_BASE_URL = "http://localhost:3000/api";
 import { 
   Loader2, ArrowLeft, Check, X, Mail, Clock, Save, 
   AlertTriangle, CheckCircle2, XCircle, AlertCircle, 
@@ -47,73 +49,16 @@ const TeacherAttendance = () => {
       if (!gradeId) return;
       
       try {
+        const gradeRes = await fetch(`${API_BASE_URL}/grades/${gradeId}`);
+        if (!gradeRes.ok) throw new Error("Failed to fetch grade");
+        const gradeData = await gradeRes.json();
 
-        
-        // Mock grade
-        const mockGrade = { id: parseInt(gradeId), name: `Grade ${gradeId}` };
-        
-        // Mock students for this grade with attendance status
-        const mockStudents = [
-          { 
-            id: 1, 
-            name: "Alice Johnson", 
-            email: "alice@example.com", 
-            status: "present",
-            uniform: { shoes: true, shirt: true, pants: true, sweater: true, haircut: true }
-          },
-          { 
-            id: 2, 
-            name: "Bob Smith", 
-            email: "bob@example.com", 
-            status: "present",
-            uniform: { shoes: true, shirt: true, pants: true, sweater: false, haircut: true }
-          },
-          { 
-            id: 3, 
-            name: "Charlie Brown", 
-            email: "charlie@example.com", 
-            status: "absent",
-            uniform: { shoes: true, shirt: true, pants: true, sweater: true, haircut: true }
-          },
-          { 
-            id: 4, 
-            name: "Diana Prince", 
-            email: "diana@example.com", 
-            status: "late",
-            uniform: { shoes: false, shirt: true, pants: true, sweater: true, haircut: true }
-          },
-          { 
-            id: 5, 
-            name: "Edward Cullen", 
-            email: "edward@example.com", 
-            status: "present",
-            uniform: { shoes: true, shirt: false, pants: true, sweater: true, haircut: false }
-          },
-          { 
-            id: 6, 
-            name: "Fiona Gallagher", 
-            email: "fiona@example.com", 
-            status: "present",
-            uniform: { shoes: true, shirt: true, pants: true, sweater: true, haircut: true }
-          },
-          { 
-            id: 7, 
-            name: "George Washington", 
-            email: "george@example.com", 
-            status: "absent",
-            uniform: { shoes: true, shirt: true, pants: false, sweater: true, haircut: true }
-          },
-          { 
-            id: 8, 
-            name: "Hannah Montana", 
-            email: "hannah@example.com", 
-            status: "late",
-            uniform: { shoes: true, shirt: true, pants: true, sweater: false, haircut: true }
-          },
-        ];
-        
-        setGrade(mockGrade);
-        setStudents(mockStudents);
+        const studentsRes = await fetch(`${API_BASE_URL}/students?gradeId=${gradeId}`);
+        if (!studentsRes.ok) throw new Error("Failed to fetch students");
+        const studentsData = await studentsRes.json();
+
+        setGrade(gradeData);
+        setStudents(studentsData);
         
         // Check if attendance has been recorded for today
         setAttendanceRecorded(false); 
@@ -180,11 +125,20 @@ const TeacherAttendance = () => {
 
   const saveAttendance = async () => {
     setSaving(true);
-    
-    try {
 
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+    try {
+      const res = await fetch(`${API_BASE_URL}/attendance`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          gradeId: parseInt(gradeId),
+          date: attendanceDate,
+          students,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to save attendance");
+
       setAttendanceRecorded(true);
       
       toast({
@@ -209,11 +163,19 @@ const TeacherAttendance = () => {
 
   const sendEmail = async (type) => {
     try {
+      const res = await fetch(`${API_BASE_URL}/emails`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          studentId: selectedStudent.id,
+          type,
+        }),
+      });
 
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      if (!res.ok) throw new Error("Failed to send email");
+
       setEmailDialogOpen(false);
-      
+
       toast({
         title: "Email Sent",
         description: `Email sent to ${selectedStudent.name} successfully.`,
