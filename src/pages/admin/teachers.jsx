@@ -10,6 +10,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Plus, Trash2, UserPlus } from "lucide-react";
 
+const API_BASE_URL = "http://localhost:3000/api";
+
 const AdminTeachers = () => {
   const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,16 +27,11 @@ const AdminTeachers = () => {
   useEffect(() => {
     const fetchTeachers = async () => {
       try {
+        const res = await fetch(`${API_BASE_URL}/teachers`);
+        if (!res.ok) throw new Error("Failed to fetch teachers");
+        const data = await res.json();
 
-        const mockTeachers = [
-          { id: 1, name: "John Doe", email: "john.doe@school.com", createdAt: "2023-01-15" },
-          { id: 2, name: "Jane Smith", email: "jane.smith@school.com", createdAt: "2023-02-20" },
-          { id: 3, name: "Robert Johnson", email: "robert.johnson@school.com", createdAt: "2023-03-10" },
-          { id: 4, name: "Emily Davis", email: "emily.davis@school.com", createdAt: "2023-04-05" },
-          { id: 5, name: "Michael Wilson", email: "michael.wilson@school.com", createdAt: "2023-05-12" },
-        ];
-        
-        setTeachers(mockTeachers);
+        setTeachers(data);
       } catch (error) {
         console.error("Error fetching teachers:", error);
         toast({
@@ -70,17 +67,17 @@ const AdminTeachers = () => {
     setIsAddingTeacher(true);
     
     try {
+      const res = await fetch(`${API_BASE_URL}/teachers`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newTeacher),
+      });
 
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      const newTeacherId = teachers.length + 1;
-      const newTeacherWithId = {
-        id: newTeacherId,
-        ...newTeacher,
-        createdAt: new Date().toISOString().split("T")[0],
-      };
-      
-      setTeachers((prev) => [...prev, newTeacherWithId]);
+      if (!res.ok) throw new Error("Failed to add teacher");
+
+      const created = await res.json();
+
+      setTeachers((prev) => [...prev, created]);
       
       setNewTeacher({
         name: "",
@@ -107,9 +104,12 @@ const AdminTeachers = () => {
 
   const handleDeleteTeacher = async (teacherId) => {
     try {
+      const res = await fetch(`${API_BASE_URL}/teachers/${teacherId}`, {
+        method: "DELETE",
+      });
 
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      if (!res.ok) throw new Error("Failed to delete teacher");
+
       setTeachers((prev) => prev.filter((teacher) => teacher.id !== teacherId));
       
       toast({

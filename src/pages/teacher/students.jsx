@@ -11,6 +11,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Plus, Trash2, ArrowLeft, UserPlus } from "lucide-react";
 
+const API_BASE_URL = "http://localhost:3000/api";
+
 const TeacherStudents = () => {
   const [searchParams] = useSearchParams();
   const gradeId = searchParams.get("gradeId");
@@ -32,23 +34,18 @@ const TeacherStudents = () => {
   useEffect(() => {
     const fetchData = async () => {
       if (!gradeId) return;
-      
-      try {
 
-        // Mock grade
-        const mockGrade = { id: parseInt(gradeId), name: `Grade ${gradeId}` };
-        
-        // Mock students for this grade
-        const mockStudents = [
-          { id: 1, name: "Alice Johnson", email: "alice@example.com", gradeId: parseInt(gradeId) },
-          { id: 2, name: "Bob Smith", email: "bob@example.com", gradeId: parseInt(gradeId) },
-          { id: 3, name: "Charlie Brown", email: "charlie@example.com", gradeId: parseInt(gradeId) },
-          { id: 4, name: "Diana Prince", email: "diana@example.com", gradeId: parseInt(gradeId) },
-          { id: 5, name: "Edward Cullen", email: "edward@example.com", gradeId: parseInt(gradeId) },
-        ];
-        
-        setGrade(mockGrade);
-        setStudents(mockStudents);
+      try {
+        const gradeRes = await fetch(`${API_BASE_URL}/grades/${gradeId}`);
+        if (!gradeRes.ok) throw new Error("Failed to fetch grade");
+        const gradeData = await gradeRes.json();
+
+        const studentsRes = await fetch(`${API_BASE_URL}/students?gradeId=${gradeId}`);
+        if (!studentsRes.ok) throw new Error("Failed to fetch students");
+        const studentsData = await studentsRes.json();
+
+        setGrade(gradeData);
+        setStudents(studentsData);
       } catch (error) {
         console.error("Error fetching data:", error);
         toast({
@@ -84,17 +81,20 @@ const TeacherStudents = () => {
     setIsAddingStudent(true);
     
     try {
+      const res = await fetch(`${API_BASE_URL}/students`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: newStudent.name,
+          email: newStudent.email,
+          gradeId: parseInt(gradeId),
+        }),
+      });
 
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      const newStudentId = students.length + 1;
-      const newStudentWithId = {
-        id: newStudentId,
-        ...newStudent,
-        gradeId: parseInt(gradeId),
-      };
-      
-      setStudents((prev) => [...prev, newStudentWithId]);
+      if (!res.ok) throw new Error("Failed to add student");
+      const created = await res.json();
+
+      setStudents((prev) => [...prev, created]);
       
       setNewStudent({
         name: "",
@@ -132,9 +132,14 @@ const TeacherStudents = () => {
     }
     
     try {
+      const res = await fetch(`${API_BASE_URL}/students/${studentToDelete.id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: deleteConfirmPassword })
+      });
 
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      if (!res.ok) throw new Error("Failed to delete student");
+
       setStudents((prev) => prev.filter((student) => student.id !== studentToDelete.id));
       
       setStudentToDelete(null);
@@ -151,6 +156,9 @@ const TeacherStudents = () => {
         description: "Failed to delete student. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setDeleteConfirmPassword("");
+      setIsDeleteDialogOpen(false);
     }
   };
 
