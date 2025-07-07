@@ -127,14 +127,16 @@ const TeacherAttendance = () => {
     setSaving(true);
 
     try {
+      const body = {
+        gradeId: parseInt(gradeId),
+        date: attendanceDate,
+        students,
+      };
+      console.log('Attendance payload:', body);
       const res = await fetch(`${API_BASE_URL}/attendance`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          gradeId: parseInt(gradeId),
-          date: attendanceDate,
-          students,
-        }),
+        body: JSON.stringify(body),
       });
 
       if (!res.ok) throw new Error("Failed to save attendance");
@@ -163,13 +165,15 @@ const TeacherAttendance = () => {
 
   const sendEmail = async (type) => {
     try {
+      const body = {
+        studentId: selectedStudent.id,
+        type,
+      };
+      console.log('Email payload:', body);
       const res = await fetch(`${API_BASE_URL}/emails`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          studentId: selectedStudent.id,
-          type,
-        }),
+        body: JSON.stringify(body),
       });
 
       if (!res.ok) throw new Error("Failed to send email");

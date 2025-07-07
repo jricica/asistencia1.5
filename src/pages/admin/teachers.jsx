@@ -65,8 +65,9 @@ const AdminTeachers = () => {
     }
     
     setIsAddingTeacher(true);
-    
+
     try {
+      console.log('New teacher data:', newTeacher);
       const res = await fetch(`${API_BASE_URL}/teachers`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

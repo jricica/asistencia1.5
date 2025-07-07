@@ -33,10 +33,12 @@ const ResetPassword = () => {
             return;
         setIsLoading(true);
         try {
+            const body = { email, password };
+            console.log('Reset password payload:', body);
             const res = await fetch("http://localhost:3000/api/password-reset", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify(body),
             });
             const data = await res.json();
             if (!res.ok)
