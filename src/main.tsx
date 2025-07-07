@@ -56,7 +56,7 @@ createRoot(document.getElementById("root")!).render(
               <Route path="/reset-password" element={<ResetPassword />} />
 
               {/* Protected Routes */}
-              <Route path="/dashboard" element={<ProtectedRoute Component={DashboardRouter} />} />
+              <Route path="/dashboard" element={<ProtectedRoute Component={DashboardRouter} roles={["admin", "teacher", "student"]} />} />
               <Route path="/profile" element={<ProtectedRoute Component={Profile} />} />
 
               {/* Admin Routes */}
@@ -66,11 +66,11 @@ createRoot(document.getElementById("root")!).render(
               <Route path="/admin/settings" element={<ProtectedRoute Component={AdminSettings} roles={["admin"]} />} />
 
               {/* Teacher Routes */}
-              <Route path="/teacher/grades" element={<ProtectedRoute Component={TeacherGrades} roles={["teacher"]} />} />
-              <Route path="/teacher/students" element={<ProtectedRoute Component={TeacherStudents} roles={["teacher"]} />} />
-              <Route path="/teacher/attendance" element={<ProtectedRoute Component={TeacherAttendance} roles={["teacher"]} />} />
-              <Route path="/teacher/reports" element={<ProtectedRoute Component={TeacherReports} roles={["teacher"]} />} />
-              <Route path="/teacher/projections" element={<ProtectedRoute Component={TeacherProjections} roles={["teacher"]} />} />
+              <Route path="/teacher/grades" element={<ProtectedRoute Component={TeacherGrades} roles={["teacher", "admin"]} />} />
+              <Route path="/teacher/students" element={<ProtectedRoute Component={TeacherStudents} roles={["teacher", "admin"]} />} />
+              <Route path="/teacher/attendance" element={<ProtectedRoute Component={TeacherAttendance} roles={["teacher", "admin"]} />} />
+              <Route path="/teacher/reports" element={<ProtectedRoute Component={TeacherReports} roles={["teacher", "admin"]} />} />
+              <Route path="/teacher/projections" element={<ProtectedRoute Component={TeacherProjections} roles={["teacher", "admin"]} />} />
             </Routes>
           </BrowserRouter>
           <Sonner />

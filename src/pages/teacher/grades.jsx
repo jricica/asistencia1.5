@@ -19,26 +19,21 @@ const TeacherGrades = () => {
   useEffect(() => {
     const fetchTeacherData = async () => {
       if (!session) return;
-      
-      try {
 
-        
-        // Mock teacher data
-        const mockTeacherId = 1;
-        const mockTeacherLevel = 1; // Elementary
-        
-        setTeacherLevel(mockTeacherLevel);
-        
-        // Mock grades for this level
-        const mockGrades = [
-          { id: 1, name: "Grade 1", levelId: 1, studentCount: 25, attendanceRate: 92, uniformCompliance: 88 },
-          { id: 2, name: "Grade 2", levelId: 1, studentCount: 28, attendanceRate: 89, uniformCompliance: 85 },
-          { id: 3, name: "Grade 3", levelId: 1, studentCount: 22, attendanceRate: 94, uniformCompliance: 90 },
-          { id: 4, name: "Grade 4", levelId: 1, studentCount: 26, attendanceRate: 91, uniformCompliance: 87 },
-          { id: 5, name: "Grade 5", levelId: 1, studentCount: 24, attendanceRate: 88, uniformCompliance: 82 },
-        ];
-        
-        setGrades(mockGrades);
+      try {
+        // Obtener datos del maestro
+        const teacherRes = await fetch(`/api/teachers?userId=${session.id}`);
+        if (!teacherRes.ok) throw new Error("Failed to fetch teacher");
+        const teacher = await teacherRes.json();
+
+        setTeacherLevel(teacher.levelId);
+
+        // Obtener grados para ese nivel
+        const gradesRes = await fetch(`/api/grades?levelId=${teacher.levelId}`);
+        if (!gradesRes.ok) throw new Error("Failed to fetch grades");
+        const gradesData = await gradesRes.json();
+
+        setGrades(gradesData);
       } catch (error) {
         console.error("Error fetching teacher data:", error);
         toast({
@@ -97,10 +92,12 @@ const TeacherGrades = () => {
                 View and manage grades in your level
               </p>
             </div>
-            <Badge variant="outline" className="bg-blue-100 text-blue-800 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300">
-              <School className="mr-2 h-4 w-4" />
-              Elementary Level
-            </Badge>
+            {teacherLevel && (
+              <Badge variant="outline" className="bg-blue-100 text-blue-800 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300">
+                <School className="mr-2 h-4 w-4" />
+                Level ID: {teacherLevel}
+              </Badge>
+            )}
           </div>
         </motion.div>
         

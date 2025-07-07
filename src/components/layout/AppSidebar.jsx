@@ -1,4 +1,10 @@
 import { Link, useLocation } from "react-router-dom";
+import { 
+  Home, BarChart2, Settings, School, 
+  Layers, UserCog, Users, ClipboardList, 
+  BookOpen 
+} from "lucide-react";
+
 import {
   Sidebar,
   SidebarContent,
@@ -9,14 +15,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import {
-  Home,
-  BarChart2,
-  Settings,
-  School,
-  Layers,
-  UserCog,
-} from "lucide-react";
+
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/context/UserContext";
@@ -39,22 +38,24 @@ export function AppSidebar() {
 
   const getMenuItems = () => {
     const baseItems = [
-      { title: "Dashboard", url: "/dashboard", icon: Home },
+      { key: "dashboard", title: "Dashboard", url: "/dashboard", icon: Home },
     ];
 
     const teacherItems = [
-      { title: "Levels & Grades", url: "/admin/levels", icon: Layers },
-      { title: "Projections", url: "/admin/projections", icon: BarChart2 },
-  
+      { key: "teacher-grades", title: "Grades", url: "/teacher/grades", icon: Layers },
+      { key: "teacher-attendance", title: "Attendance", url: "/teacher/attendance", icon: BarChart2 },
+      { key: "teacher-students", title: "Students", url: "/teacher/students", icon: Users },
+      { key: "teacher-reports", title: "Reports", url: "/teacher/reports", icon: BookOpen },
     ];
 
-    const adminItems = [
-      ...teacherItems,
-      { title: "Teachers", url: "/admin/teachers", icon: UserCog },
-      { title: "Settings", url: "/admin/settings", icon: Settings },
+    const adminExtraItems = [
+      { key: "admin-teachers", title: "Teachers", url: "/admin/teachers", icon: UserCog },
+      { key: "admin-settings", title: "Settings", url: "/admin/settings", icon: Settings },
+      { key: "admin-levels", title: "Levels", url: "/admin/levels", icon: School },
+      { key: "admin-projections", title: "Projections", url: "/admin/projections", icon: BarChart2 },
     ];
-
-    if (userRole === "admin") return [...baseItems, ...adminItems];
+    
+    if (userRole === "admin") return [...baseItems, ...teacherItems, ...adminExtraItems];
     if (userRole === "teacher") return [...baseItems, ...teacherItems];
     return baseItems;
   };
@@ -95,7 +96,7 @@ export function AppSidebar() {
                 className="space-y-1"
               >
                 {menuItems.map((itemData) => (
-                  <motion.div key={itemData.title} variants={item}>
+                  <motion.div key={itemData.key} variants={item}>
                     <SidebarMenuItem>
                       <SidebarMenuButton
                         asChild
