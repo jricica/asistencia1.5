@@ -12,6 +12,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Plus, Trash2, School, BookOpen } from "lucide-react";
 
+const API_BASE_URL = "http://localhost:3000/api";
+
 const AdminLevels = () => {
   const [levels, setLevels] = useState([]);
   const [grades, setGrades] = useState([]);
@@ -40,32 +42,19 @@ const AdminLevels = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        
-        // Mock levels
-        const mockLevels = [
-          { id: 1, name: "Elementary", description: "Grades 1-5" },
-          { id: 2, name: "Middle School", description: "Grades 6-8" },
-          { id: 3, name: "High School", description: "Grades 9-12" },
-          { id: 4, name: "Special Education", description: "All grades" },
-        ];
-        
-        // Mock grades
-        const mockGrades = [
-          { id: 1, name: "Grade 1", levelId: 1, teacherId: 1 },
-          { id: 2, name: "Grade 2", levelId: 1, teacherId: 2 },
-          { id: 3, name: "Grade 3", levelId: 1, teacherId: 3 },
-          { id: 4, name: "Grade 6", levelId: 2, teacherId: 4 },
-          { id: 5, name: "Grade 7", levelId: 2, teacherId: 5 },
-          { id: 6, name: "Grade 9", levelId: 3, teacherId: null },
-          { id: 7, name: "Grade 10", levelId: 3, teacherId: null },
-        ];
-        
-        setLevels(mockLevels);
-        setGrades(mockGrades);
+        const levelRes = await fetch(`${API_BASE_URL}/levels`);
+        if (!levelRes.ok) throw new Error("Failed to fetch levels");
+        const levelsData = await levelRes.json();
+        setLevels(levelsData);
 
-        const res = await fetch('/api/teachers');
-        if (!res.ok) throw new Error('Failed to fetch teachers');
-        const teachersData = await res.json();
+        const gradeRes = await fetch(`${API_BASE_URL}/grades`);
+        if (!gradeRes.ok) throw new Error("Failed to fetch grades");
+        const gradesData = await gradeRes.json();
+        setGrades(gradesData);
+
+        const teacherRes = await fetch(`${API_BASE_URL}/teachers`);
+        if (!teacherRes.ok) throw new Error("Failed to fetch teachers");
+        const teachersData = await teacherRes.json();
         setTeachers(teachersData);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -111,16 +100,17 @@ const AdminLevels = () => {
     setIsAddingLevel(true);
     
     try {
+      const res = await fetch(`${API_BASE_URL}/levels`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newLevel),
+      });
 
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      const newLevelId = levels.length + 1;
-      const newLevelWithId = {
-        id: newLevelId,
-        ...newLevel,
-      };
-      
-      setLevels((prev) => [...prev, newLevelWithId]);
+      if (!res.ok) throw new Error("Failed to add level");
+
+      const created = await res.json();
+
+      setLevels((prev) => [...prev, created]);
       
       setNewLevel({
         name: "",
@@ -159,21 +149,26 @@ const AdminLevels = () => {
     setIsAddingGrade(true);
     
     try {
-
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      const newGradeId = grades.length + 1;
-      const newGradeWithId = {
-        id: newGradeId,
-        ...newGrade,
+      const payload = {
+        name: newGrade.name,
         levelId: parseInt(newGrade.levelId),
         teacherId:
           newGrade.teacherId && newGrade.teacherId !== "unassigned"
             ? parseInt(newGrade.teacherId)
             : null,
       };
-      
-      setGrades((prev) => [...prev, newGradeWithId]);
+
+      const res = await fetch(`${API_BASE_URL}/grades`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error("Failed to add grade");
+
+      const created = await res.json();
+
+      setGrades((prev) => [...prev, created]);
       
       setNewGrade({
         name: "",
@@ -213,8 +208,12 @@ const AdminLevels = () => {
       }
       
 
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      const res = await fetch(`${API_BASE_URL}/levels/${levelId}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) throw new Error("Failed to delete level");
+
       setLevels((prev) => prev.filter((level) => level.id !== levelId));
       
       toast({
@@ -232,9 +231,12 @@ const AdminLevels = () => {
 
   const handleDeleteGrade = async (gradeId) => {
     try {
+      const res = await fetch(`${API_BASE_URL}/grades/${gradeId}`, {
+        method: "DELETE",
+      });
 
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      if (!res.ok) throw new Error("Failed to delete grade");
+
       setGrades((prev) => prev.filter((grade) => grade.id !== gradeId));
       
       toast({
