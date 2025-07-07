@@ -45,6 +45,7 @@ export function AppSidebar() {
     const teacherItems = [
       { title: "Levels & Grades", url: "/admin/levels", icon: Layers },
       { title: "Projections", url: "/admin/projections", icon: BarChart2 },
+  
     ];
 
     const adminItems = [
