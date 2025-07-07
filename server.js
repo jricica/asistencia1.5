@@ -2,7 +2,12 @@ import express from 'express';
 import cors from 'cors';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from './fine/db.js';
+
 import teacherRoutes from './routes/teachers.js';
+import levelsRoutes from './routes/levels.js';
+import gradesRoutes from './routes/grades.js';
+import studentsRoutes from './routes/students.js';
+import attendanceRoutes from './routes/attendance.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -10,13 +15,16 @@ const IS_DEV = process.env.NODE_ENV !== 'production';
 
 app.use(cors());
 app.use(express.json());
-app.use('/api/teachers', teacherRoutes);
 
-// Simple in-memory store for recovery tokens
+app.use('/api/teachers', teacherRoutes);
+app.use('/api/levels', levelsRoutes);
+app.use('/api/grades', gradesRoutes);
+app.use('/api/students', studentsRoutes);
+app.use('/api/attendance', attendanceRoutes);
+
 const recoveryTokens = new Map();
 const TOKEN_EXPIRY_MS = 15 * 60 * 1000;
 
-// 🔒 Middleware simple de autenticación
 export const isAuthenticated = async (req, res, next) => {
   const userIdHeader = req.header('authorization');
   const userId = parseInt(userIdHeader, 10);
@@ -39,7 +47,6 @@ export const isAuthenticated = async (req, res, next) => {
   }
 };
 
-// 🔐 LOGIN
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -60,7 +67,6 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// 🔐 SIGNUP
 app.post('/api/signup', async (req, res) => {
   const { name, email, password, recoveryWord, role } = req.body;
   if (!name || !email || !password || !role || !recoveryWord) {
@@ -91,7 +97,6 @@ app.post('/api/signup', async (req, res) => {
   }
 });
 
-// 🔑 Verify recovery word and generate token
 app.post('/api/recover-password', async (req, res) => {
   const { email, recoveryWord } = req.body;
   if (!email || !recoveryWord) {
@@ -119,7 +124,6 @@ app.post('/api/recover-password', async (req, res) => {
   }
 });
 
-// 🔄 Reset password with valid token
 app.post('/api/reset-password', async (req, res) => {
   const { token, password } = req.body;
   if (!token || !password) {
@@ -141,7 +145,6 @@ app.post('/api/reset-password', async (req, res) => {
   }
 });
 
-// ✅ Nuevo flujo simple de recuperación de contraseña
 app.post('/api/password-recovery', async (req, res) => {
   const { email, recoveryWord } = req.body;
   if (!email || !recoveryWord) {
@@ -185,7 +188,6 @@ app.post('/api/password-reset', async (req, res) => {
   }
 });
 
-// ✅ Ruta protegida para listar todos los usuarios
 app.get('/api/users', isAuthenticated, async (_req, res) => {
   try {
     const [rows] = await db.query('SELECT id, name, email, role FROM users');
@@ -196,7 +198,6 @@ app.get('/api/users', isAuthenticated, async (_req, res) => {
   }
 });
 
-// ✅ Ruta protegida para obtener un usuario por email
 app.get('/api/user/:email', isAuthenticated, async (req, res) => {
   const { email } = req.params;
   try {
@@ -211,7 +212,6 @@ app.get('/api/user/:email', isAuthenticated, async (req, res) => {
   }
 });
 
-// 🐛 Ruta pública de desarrollo para ver usuarios sin autenticación
 if (IS_DEV) {
   app.get('/api/debug/users', async (_req, res) => {
     try {
@@ -224,7 +224,6 @@ if (IS_DEV) {
   });
 }
 
-// 🚀 Iniciar servidor
 app.listen(PORT, () => {
   console.log(`✅ Servidor escuchando en http://localhost:${PORT}`);
 });
