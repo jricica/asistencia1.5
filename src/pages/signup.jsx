@@ -74,6 +74,7 @@ export default function SignupForm() {
     setIsLoading(true);
 
     try {
+      console.log('Signup payload:', formData);
       const res = await fetch("http://localhost:3000/api/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

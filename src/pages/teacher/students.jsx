@@ -79,16 +79,18 @@ const TeacherStudents = () => {
     }
     
     setIsAddingStudent(true);
-    
+
     try {
+      const body = {
+        name: newStudent.name,
+        email: newStudent.email,
+        gradeId: parseInt(gradeId),
+      };
+      console.log('New student data:', body);
       const res = await fetch(`${API_BASE_URL}/students`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: newStudent.name,
-          email: newStudent.email,
-          gradeId: parseInt(gradeId),
-        }),
+        body: JSON.stringify(body),
       });
 
       if (!res.ok) throw new Error("Failed to add student");
