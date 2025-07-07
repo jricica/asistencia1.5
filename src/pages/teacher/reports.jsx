@@ -19,8 +19,8 @@ const TeacherReports = () => {
   const [grades, setGrades] = useState([]);
   const [students, setStudents] = useState([]);
   const [reports, setReports] = useState([]);
-  const [selectedGrade, setSelectedGrade] = useState("");
-  const [selectedStudent, setSelectedStudent] = useState("");
+  const [selectedGrade, setSelectedGrade] = useState("default");
+  const [selectedStudent, setSelectedStudent] = useState("default");
   const [searchQuery, setSearchQuery] = useState("");
   const [emailForm, setEmailForm] = useState({
     subject: "",
@@ -128,8 +128,8 @@ const TeacherReports = () => {
   };
 
   const getFilteredStudents = () => {
-    if (!selectedGrade) return [];
-    return students.filter(student => student.gradeId === parseInt(selectedGrade));
+    if (selectedGrade === "default") return [];
+    return students.filter((student) => student.gradeId === parseInt(selectedGrade));
   };
 
   const getFilteredReports = () => {
@@ -140,10 +140,10 @@ const TeacherReports = () => {
           report.message.toLowerCase().includes(searchQuery.toLowerCase())
         : true;
 
-      const matchesStudent =
-        selectedStudent && selectedStudent !== "all"
-          ? report.studentId === parseInt(selectedStudent)
-          : true;
+    const matchesStudent =
+      selectedStudent !== "default" && selectedStudent !== "all"
+        ? report.studentId === parseInt(selectedStudent)
+        : true;
 
       return matchesSearch && matchesStudent;
     });
@@ -161,7 +161,10 @@ const TeacherReports = () => {
       return;
     }
     
-    if (!selectedGrade && (!selectedStudent || selectedStudent === "all")) {
+    if (
+      selectedGrade === "default" &&
+      (selectedStudent === "default" || selectedStudent === "all")
+    ) {
       toast({
         title: "Error",
         description: "Please select a grade or student.",
@@ -177,16 +180,16 @@ const TeacherReports = () => {
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       // Create a new report entry
-      const newReport = {
-        id: reports.length + 1,
-        studentId:
-          selectedStudent && selectedStudent !== "all"
-            ? parseInt(selectedStudent)
-            : null,
-        studentName:
-          selectedStudent && selectedStudent !== "all"
-            ? students.find((s) => s.id === parseInt(selectedStudent))?.name
-            : `All students in ${grades.find((g) => g.id === parseInt(selectedGrade))?.name}`,
+    const newReport = {
+      id: reports.length + 1,
+      studentId:
+        selectedStudent !== "default" && selectedStudent !== "all"
+          ? parseInt(selectedStudent)
+          : null,
+      studentName:
+        selectedStudent !== "default" && selectedStudent !== "all"
+          ? students.find((s) => s.id === parseInt(selectedStudent))?.name
+          : `All students in ${grades.find((g) => g.id === parseInt(selectedGrade))?.name}`,
         type: emailForm.type,
         subject: emailForm.subject,
         message: emailForm.message,
@@ -256,13 +259,16 @@ const TeacherReports = () => {
                           value={selectedGrade}
                           onValueChange={(value) => {
                             setSelectedGrade(value);
-                            setSelectedStudent("");
+                            setSelectedStudent("default");
                           }}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Select a grade" />
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectItem value="default" disabled>
+                              Select a grade
+                            </SelectItem>
                             {grades.map((grade) => (
                               <SelectItem key={grade.id} value={grade.id.toString()}>
                                 {grade.name}
@@ -277,12 +283,15 @@ const TeacherReports = () => {
                         <Select
                           value={selectedStudent}
                           onValueChange={setSelectedStudent}
-                          disabled={!selectedGrade}
+                          disabled={selectedGrade === "default"}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="All students in grade" />
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectItem value="default" disabled>
+                              Select a student
+                            </SelectItem>
                             <SelectItem value="all">All students in grade</SelectItem>
                             {getFilteredStudents().map((student) => (
                               <SelectItem key={student.id} value={student.id.toString()}>
@@ -296,7 +305,7 @@ const TeacherReports = () => {
                     
                     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                       <DialogTrigger asChild>
-                        <Button disabled={!selectedGrade}>
+                        <Button disabled={selectedGrade === "default"}>
                           <Mail className="mr-2 h-4 w-4" />
                           Compose Email
                         </Button>
@@ -305,9 +314,10 @@ const TeacherReports = () => {
                         <DialogHeader>
                           <DialogTitle>Compose Email</DialogTitle>
                           <DialogDescription>
-                            Send an email to {selectedStudent && selectedStudent !== "all"
-                              ? students.find((s) => s.id === parseInt(selectedStudent))?.name
-                              : `all students in ${grades.find((g) => g.id === parseInt(selectedGrade))?.name}`
+                            Send an email to{
+                              selectedStudent !== "default" && selectedStudent !== "all"
+                                ? ` ${students.find((s) => s.id === parseInt(selectedStudent))?.name}`
+                                : ` all students in ${grades.find((g) => g.id === parseInt(selectedGrade))?.name}`
                             }
                           </DialogDescription>
                         </DialogHeader>
@@ -419,6 +429,9 @@ const TeacherReports = () => {
                           <SelectValue placeholder="Filter by student" />
                         </SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="default" disabled>
+                            Filter by student
+                          </SelectItem>
                           <SelectItem value="all">All Students</SelectItem>
                           {students.map((student) => (
                             <SelectItem key={student.id} value={student.id.toString()}>
