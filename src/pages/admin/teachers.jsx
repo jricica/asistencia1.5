@@ -10,7 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Plus, Trash2, UserPlus } from "lucide-react";
 
-const API_BASE_URL = "http://localhost:3000/api";
+const API_BASE_URL = "https://asistencia15-production.up.railway.app/api";
 
 const AdminTeachers = () => {
   const [teachers, setTeachers] = useState([]);

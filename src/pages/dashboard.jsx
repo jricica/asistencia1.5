@@ -25,7 +25,7 @@ useEffect(() => {
 
     try {
       const res = await fetch(
-        `http://localhost:3000/api/user/${session.email}`,
+        `https://asistencia15-production.up.railway.app/api/user/${session.email}`,
         {
           headers: { Authorization: String(session.id) }
         }
@@ -43,7 +43,7 @@ useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         if (session?.id) {
-          await fetch('http://localhost:3000/api/users', {
+          await fetch('https://asistencia15-production.up.railway.app/api/users', {
             headers: { Authorization: String(session.id) }
           });
         }

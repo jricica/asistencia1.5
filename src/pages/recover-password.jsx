@@ -44,7 +44,7 @@ const RecoverPassword = () => {
         setIsLoading(true);
         try {
             console.log('Recover password payload:', formData);
-            const res = await fetch("http://localhost:3000/api/recover-password", {
+            const res = await fetch("https://asistencia15-production.up.railway.app/api/recover-password", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(formData),
