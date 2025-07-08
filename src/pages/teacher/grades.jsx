@@ -22,14 +22,14 @@ const TeacherGrades = () => {
 
       try {
         // Obtener datos del maestro
-        const teacherRes = await fetch(`/api/teachers?userId=${session.id}`);
+        const teacherRes = await fetch(`https://asistencia15-production.up.railway.app/api/teachers?userId=${session.id}`);
         if (!teacherRes.ok) throw new Error("Failed to fetch teacher");
         const teacher = await teacherRes.json();
 
         setTeacherLevel(teacher.levelId);
 
         // Obtener grados para ese nivel
-        const gradesRes = await fetch(`/api/grades?levelId=${teacher.levelId}`);
+        const gradesRes = await fetch(`https://asistencia15-production.up.railway.app/api/grades?levelId=${teacher.levelId}`);
         if (!gradesRes.ok) throw new Error("Failed to fetch grades");
         const gradesData = await gradesRes.json();
 
