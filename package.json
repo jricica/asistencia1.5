@@ -6,7 +6,7 @@
   "homepage": "https://jricica.github.io/asistencia1.5",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && cpx \"dist/index.html\" dist/404.html",
+    "build": "tsc -b && vite build && Copy-Item dist/index.html dist/404.html",
     "lint": "eslint .",
     "preview": "vite preview",
     "build:sourcemap": "vite build",
