@@ -38,7 +38,7 @@ createRoot(document.getElementById("root")).render(
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <ThemeProvider defaultTheme="light">
-        <BrowserRouter>
+        <BrowserRouter basename={import.meta.env.BASE_URL}>
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<Index />} />
