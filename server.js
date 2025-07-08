@@ -22,6 +22,11 @@ app.use('/api/grades', gradesRoutes);
 app.use('/api/students', studentsRoutes);
 app.use('/api/attendance', attendanceRoutes);
 
+// ✅ Nueva ruta raíz para comprobar si está en línea
+app.get('/', (_req, res) => {
+  res.send('Backend activo desde Railway');
+});
+
 const recoveryTokens = new Map();
 const TOKEN_EXPIRY_MS = 15 * 60 * 1000;
 
@@ -224,6 +229,7 @@ if (IS_DEV) {
   });
 }
 
+// ⏬ Aquí empieza el servidor
 app.listen(PORT, () => {
   console.log(`✅ Servidor escuchando en http://localhost:${PORT}`);
 });
