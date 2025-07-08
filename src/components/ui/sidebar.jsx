@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva } from "class-variance-authority";
@@ -24,7 +25,19 @@ function useSidebar() {
     }
     return context;
 }
-const SidebarProvider = React.forwardRef(({ defaultOpen = true, open: openProp, onOpenChange: setOpenProp, className, style, children, ...props }, ref) => {
+
+
+const SidebarProvider = React.forwardRef(
+  function SidebarProvider(props, ref) {
+  const {
+    defaultOpen = true,
+    open: openProp,
+    onOpenChange: setOpenProp,
+    className,
+    style,
+    children,
+    ...rest
+  } = props;
     const isMobile = useIsMobile();
     const [openMobile, setOpenMobile] = React.useState(false);
     // This is the internal state of the sidebar.

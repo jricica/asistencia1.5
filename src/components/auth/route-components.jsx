@@ -1,7 +1,7 @@
 import { Navigate } from "react-router-dom";
 import { useUser } from "@/context/UserContext";
 
-export const ProtectedRoute = ({ Component, roles }) => {
+export const ProtectedRoute = ({ Component, roles = [] }) => {
     const { user } = useUser();
 
     if (!user) return <Navigate to='/login' />;
