@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://jricica.github.io/asistencia1.5/",
+  "homepage": "https://jricica.github.io/",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build && cpy dist/index.html dist/ --rename=404.html",
