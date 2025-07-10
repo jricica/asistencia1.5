@@ -14,11 +14,10 @@ const PORT = process.env.PORT || 3000;
 const IS_DEV = process.env.NODE_ENV !== 'production';
 
 app.use(cors({
-  origin: "https://jrcicica.github.io",
+  origin: "https://jricica.github.io", // ✅ esto es lo correcto
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
-
 
 app.use(express.json());
 
