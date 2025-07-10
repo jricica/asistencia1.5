@@ -13,7 +13,13 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const IS_DEV = process.env.NODE_ENV !== 'production';
 
-app.use(cors());
+app.use(cors({
+  origin: "https://jrcicica.github.io", // Tu dominio frontend
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
+}));
+
 app.use(express.json());
 
 app.use('/api/teachers', teacherRoutes);
