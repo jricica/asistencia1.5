@@ -5,6 +5,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { TooltipProvider } from "./components/ui/tooltip";
 import { ThemeProvider } from "./components/layout/theme-provider";
+import { UserProvider } from "@/context/UserContext"; 
 import "./index.css";
 
 // Pages
@@ -38,35 +39,30 @@ createRoot(document.getElementById("root")).render(
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <ThemeProvider defaultTheme="light">
-        <BrowserRouter basename={import.meta.env.BASE_URL}>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<LoginForm />} />
-            <Route path="/signup" element={<SignupForm />} />
-            <Route path="/logout" element={<Logout />} />
-            <Route path="/recover-password" element={<RecoverPassword />} />
-            
-            {/* Protected Routes */}
-            <Route path="/dashboard" element={<ProtectedRoute Component={DashboardRouter} />} />
-            <Route path="/profile" element={<ProtectedRoute Component={Profile} />} />
-            
-            {/* Admin Routes */}
-            <Route path="/admin/teachers" element={<ProtectedRoute Component={AdminTeachers} roles={["admin"]} />} />
-            <Route path="/admin/levels" element={<ProtectedRoute Component={AdminLevels} roles={["admin"]} />} />
-            <Route path="/admin/projections" element={<ProtectedRoute Component={AdminProjections} roles={["admin"]} />} />
-            <Route path="/admin/settings" element={<ProtectedRoute Component={AdminSettings} roles={["admin"]} />} />
-            
-            {/* Teacher Routes */}
-            <Route path="/teacher/grades" element={<ProtectedRoute Component={TeacherGrades} roles={["teacher", "admin"]} />} />
-            <Route path="/teacher/students" element={<ProtectedRoute Component={TeacherStudents} roles={["teacher", "admin"]} />} />
-            <Route path="/teacher/attendance" element={<ProtectedRoute Component={TeacherAttendance} roles={["teacher", "admin"]} />} />
-            <Route path="/teacher/reports" element={<ProtectedRoute Component={TeacherReports} roles={["teacher", "admin"]} />} />
-            <Route path="/teacher/projections" element={<ProtectedRoute Component={TeacherProjections} roles={["teacher", "admin"]} />} />
-          </Routes>
-        </BrowserRouter>
-        <Sonner />
-        <Toaster />
+        <UserProvider> {/* ✅ ENVUELVE TODO AQUÍ */}
+          <BrowserRouter basename={import.meta.env.BASE_URL}>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<LoginForm />} />
+              <Route path="/signup" element={<SignupForm />} />
+              <Route path="/logout" element={<Logout />} />
+              <Route path="/recover-password" element={<RecoverPassword />} />
+              <Route path="/dashboard" element={<ProtectedRoute Component={DashboardRouter} />} />
+              <Route path="/profile" element={<ProtectedRoute Component={Profile} />} />
+              <Route path="/admin/teachers" element={<ProtectedRoute Component={AdminTeachers} roles={["admin"]} />} />
+              <Route path="/admin/levels" element={<ProtectedRoute Component={AdminLevels} roles={["admin"]} />} />
+              <Route path="/admin/projections" element={<ProtectedRoute Component={AdminProjections} roles={["admin"]} />} />
+              <Route path="/admin/settings" element={<ProtectedRoute Component={AdminSettings} roles={["admin"]} />} />
+              <Route path="/teacher/grades" element={<ProtectedRoute Component={TeacherGrades} roles={["teacher", "admin"]} />} />
+              <Route path="/teacher/students" element={<ProtectedRoute Component={TeacherStudents} roles={["teacher", "admin"]} />} />
+              <Route path="/teacher/attendance" element={<ProtectedRoute Component={TeacherAttendance} roles={["teacher", "admin"]} />} />
+              <Route path="/teacher/reports" element={<ProtectedRoute Component={TeacherReports} roles={["teacher", "admin"]} />} />
+              <Route path="/teacher/projections" element={<ProtectedRoute Component={TeacherProjections} roles={["teacher", "admin"]} />} />
+            </Routes>
+          </BrowserRouter>
+          <Sonner />
+          <Toaster />
+        </UserProvider>
       </ThemeProvider>
     </TooltipProvider>
   </QueryClientProvider>
