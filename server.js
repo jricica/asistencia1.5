@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 3000;
 const IS_DEV = process.env.NODE_ENV !== 'production';
 
 app.use(cors({
-  origin: "https://jrcicica.github.io", // Tu dominio frontend
+  origin: "https://jricica.github.io/asistencia1.5/", // Tu dominio frontend
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
