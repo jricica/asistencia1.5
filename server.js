@@ -13,19 +13,27 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const IS_DEV = process.env.NODE_ENV !== 'production';
 
+// ✅ CORS seguro
+const allowedOrigins = [
+  'https://jricica.github.io',
+  'http://localhost:5173',
+];
 
-const corsOptions = {
-  origin: "https://jricica.github.io",
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
-  optionsSuccessStatus: 200
-};
+}));
 
-app.use(cors(corsOptions));
-app.options("*", cors(corsOptions)); // <-- Muy importante
-
-
+// ✅ Responder preflight
+app.options('*', cors());
 
 app.use(express.json());
 
@@ -35,7 +43,7 @@ app.use('/api/grades', gradesRoutes);
 app.use('/api/students', studentsRoutes);
 app.use('/api/attendance', attendanceRoutes);
 
-// ✅ Nueva ruta raíz para comprobar si está en línea
+// Prueba de vida
 app.get('/', (_req, res) => {
   res.send('Backend activo desde Railway');
 });
