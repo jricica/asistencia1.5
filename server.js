@@ -1,5 +1,4 @@
 import express from 'express';
-import cors from 'cors';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from './fine/db.js';
 
@@ -13,31 +12,31 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const IS_DEV = process.env.NODE_ENV !== 'production';
 
-// ✅ CORS seguro (antes de todo)
-const allowedOrigins = [
-  'https://jricica.github.io',
-  'http://localhost:5173',
-];
+// ✅ CORS universal para GitHub Pages + Railway
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  const allowedOrigins = [
+    'https://jricica.github.io',
+    'http://localhost:5173'
+  ];
 
-const corsOptions = {
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
-};
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
 
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // ✅ Preflight
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204); // ✅ Finaliza preflight correctamente
+  }
+
+  next();
+});
 
 app.use(express.json());
 
-// ✅ Rutas
 app.use('/api/teachers', teacherRoutes);
 app.use('/api/levels', levelsRoutes);
 app.use('/api/grades', gradesRoutes);
@@ -250,7 +249,6 @@ if (IS_DEV) {
   });
 }
 
-// ⏬ Aquí empieza el servidor
 app.listen(PORT, () => {
   console.log(`✅ Servidor escuchando en http://localhost:${PORT}`);
 });
