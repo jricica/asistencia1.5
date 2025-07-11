@@ -1,22 +1,13 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import path from 'path';
+import react from "@vitejs/plugin-react";
+import path from "path";
+import { defineConfig } from "vite";
 
 export default defineConfig({
-  base: "/",
+  base: "/asistencia1.5/", // 👈 ¡ESTO ES CLAVE!
   plugins: [react()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-    },
-  },
-  server: {
-    proxy: {
-      "/api": {
-        target: "https://asistencia-1-5.onrender.com",
-        changeOrigin: true,
-        secure: false,
-      },
     },
   },
 });

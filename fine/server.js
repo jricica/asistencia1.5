@@ -2,24 +2,34 @@ import express from 'express';
 import cors from 'cors';
 import { db } from './db.js';
 
+import path from 'path';
+import { fileURLToPath } from 'url';
+
 const app = express();
 const PORT = 3000;
 
+// Obtener __dirname en ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-// ✅ Obtener todos los usuarios
+// API endpoints
+
+// Obtener todos los usuarios
 app.get('/api/users', async (_req, res) => {
   try {
     const [rows] = await db.query('SELECT * FROM users');
     res.json(rows);
   } catch (err) {
-    console.error(err);
+    console.error('Error en /api/users:', err);
     res.status(500).json({ error: 'Database error' });
   }
 });
 
-// ✅ Registrar nuevo usuario
+// Registrar nuevo usuario
 app.post('/api/signup', async (req, res) => {
   const { name, email, password, role } = req.body;
 
@@ -51,12 +61,15 @@ app.post('/api/signup', async (req, res) => {
   }
 });
 
-// ✅ Login de usuario
+// Login de usuario
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Faltan campos' });
+  console.log('POST /api/login recibido con:', { email, password: password ? '******' : undefined });
+
+  if (!email || typeof email !== 'string' || !password || typeof password !== 'string') {
+    console.warn('Datos faltantes o inválidos en login');
+    return res.status(400).json({ error: 'Faltan campos o son inválidos' });
   }
 
   try {
@@ -66,9 +79,11 @@ app.post('/api/login', async (req, res) => {
     );
 
     if (rows.length === 0) {
+      console.log('Credenciales incorrectas para usuario:', email);
       return res.status(401).json({ error: 'Credenciales incorrectas' });
     }
 
+    console.log('Login exitoso para usuario:', email);
     res.json({ success: true, user: rows[0] });
   } catch (err) {
     console.error('Error en /api/login:', err);
@@ -76,7 +91,7 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// ✅ Obtener usuario por email
+// Obtener usuario por email
 app.get('/api/user/:email', async (req, res) => {
   const { email } = req.params;
 
@@ -97,6 +112,13 @@ app.get('/api/user/:email', async (req, res) => {
   }
 });
 
+// Servir archivos estáticos del frontend en /asistencia1.5
+app.use('/asistencia1.5', express.static(path.join(__dirname, 'dist')));
+
+// Redirigir rutas no API bajo /asistencia1.5 a index.html (SPA)
+app.get(/^\/asistencia1\.5\/(?!api).*/, (_req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
 
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en http://localhost:${PORT}`);
