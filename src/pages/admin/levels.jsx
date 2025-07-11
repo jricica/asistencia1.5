@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Plus, Trash2, School, BookOpen } from "lucide-react";
 
-const API_BASE_URL = "https://asistencia15-production.up.railway.app/api";
+const API_BASE_URL = "https://asistencia-1-5.onrender.com";
 
 const AdminLevels = () => {
   const [levels, setLevels] = useState([]);
