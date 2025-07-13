@@ -2,7 +2,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { HashRouter, Route, Routes } from "react-router-dom";
 import { TooltipProvider } from "./components/ui/tooltip";
 import { ThemeProvider } from "./components/layout/theme-provider";
 import { UserProvider } from "@/context/UserContext"; 
@@ -40,7 +40,7 @@ createRoot(document.getElementById("root")).render(
     <TooltipProvider>
       <ThemeProvider defaultTheme="light">
         <UserProvider> {/* ✅ ENVUELVE TODO AQUÍ */}
-          <BrowserRouter basename={import.meta.env.BASE_URL}>
+          <HashRouter basename={import.meta.env.BASE_URL}>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<LoginForm />} />
@@ -59,7 +59,7 @@ createRoot(document.getElementById("root")).render(
               <Route path="/teacher/reports" element={<ProtectedRoute Component={TeacherReports} roles={["teacher", "admin"]} />} />
               <Route path="/teacher/projections" element={<ProtectedRoute Component={TeacherProjections} roles={["teacher", "admin"]} />} />
             </Routes>
-          </BrowserRouter>
+          </HashRouter>
           <Sonner />
           <Toaster />
         </UserProvider>
