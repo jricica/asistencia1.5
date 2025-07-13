@@ -12,7 +12,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const IS_DEV = process.env.NODE_ENV !== 'production';
 
-// ✅ CORS universal para GitHub Pages + Railway
+
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   const allowedOrigins = [
