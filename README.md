@@ -38,7 +38,7 @@ asistencia1.5/
 ## ⚙️ Instalación
 1. Clona este repositorio.
 2. Ejecuta `npm install` para instalar las dependencias.
-3. Configura tus credenciales de MySQL en `fine/db.js`.
+3. Configura la URL y clave de tu proyecto Supabase en `supabaseClient.js`.
 4. Crea la base de datos ejecutando el script `fine/migrations/20250701164618_create_school_schema.sql`.
 5. Inicia el backend con `node server.js`.
 6. En otra terminal, levanta el frontend con `npm run dev`.

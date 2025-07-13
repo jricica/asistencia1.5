@@ -1,13 +1,17 @@
 import express from 'express';
-import { db } from '../fine/db.js';
+import { supabase } from '../supabaseClient.js';
 
 const router = express.Router();
 
 // Obtener todos los profesores
 router.get('/', async (_req, res) => {
   try {
-    const [rows] = await db.query("SELECT id, name, email FROM users WHERE role = 'teacher'");
-    res.json(rows);
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, name, email')
+      .eq('role', 'teacher');
+    if (error) throw error;
+    res.json(data);
   } catch (err) {
     console.error('Error al obtener maestros:', err);
     res.status(500).json({ error: 'Error al obtener maestros' });
@@ -23,22 +27,22 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    const [exists] = await db.query('SELECT id FROM users WHERE email = ?', [email]);
-    if (exists.length > 0) {
+    const { data: exists, error: existsErr } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email);
+    if (existsErr) throw existsErr;
+    if (exists && exists.length > 0) {
       return res.status(400).json({ error: 'El email ya existe' });
     }
 
-    const [result] = await db.query(
-      'INSERT INTO users (name, email, password, recoveryWord, role) VALUES (?, ?, ?, ?, ?)',
-      [name, email, password, recoveryWord, 'teacher']
-    );
-
-    res.status(201).json({
-      id: result.insertId,
-      name,
-      email,
-      role: 'teacher'
-    });
+    const { data, error } = await supabase
+      .from('users')
+      .insert({ name, email, password, recoveryWord, role: 'teacher' })
+      .select('id, name, email, role')
+      .single();
+    if (error) throw error;
+    res.status(201).json(data);
   } catch (err) {
     console.error('Error al crear maestro:', err);
     res.status(500).json({ error: 'Error al crear maestro' });
