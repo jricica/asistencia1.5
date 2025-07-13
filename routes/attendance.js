@@ -1,6 +1,6 @@
 // routes/attendance.js
 import express from "express";
-import { db } from "../fine/db.js";
+import { supabase } from "../supabaseClient.js";
 
 const router = express.Router();
 
@@ -8,13 +8,18 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   const { date } = req.query;
   try {
-    const [rows] = await db.query(
-      `SELECT a.id, s.name AS student, a.date, a.status
-       FROM attendance a
-       JOIN students s ON a.studentId = s.id
-       WHERE a.date = ?`,
-      [date || new Date().toISOString().split("T")[0]]
-    );
+    const day = date || new Date().toISOString().split("T")[0];
+    const { data, error } = await supabase
+      .from("attendance")
+      .select("id,date,status,students(name)")
+      .eq("date", day);
+    if (error) throw error;
+    const rows = data.map(a => ({
+      id: a.id,
+      student: a.students?.name || null,
+      date: a.date,
+      status: a.status,
+    }));
     res.json(rows);
   } catch (err) {
     console.error("Error al obtener asistencia:", err);
@@ -31,17 +36,16 @@ router.post("/", async (req, res) => {
   }
 
   try {
-    const insertPromises = students.map((student) =>
-    db.query(
-        `INSERT INTO attendance (studentId, date, status) 
-        VALUES (?, ?, ?)
-        ON DUPLICATE KEY UPDATE status = VALUES(status)`,
-        [student.id, date, student.status]
-    )
-    );
+    const rows = students.map((student) => ({
+      studentId: student.id,
+      date,
+      status: student.status,
+      gradeId,
+    }));
+    const { error } = await supabase.from("attendance").upsert(rows);
+    if (error) throw error;
 
-
-    await Promise.all(insertPromises);
+    await Promise.resolve();
 
     res.status(201).json({ message: "Asistencia registrada con éxito" });
   } catch (err) {

@@ -1,13 +1,14 @@
 // routes/levels.js
 import express from 'express';
-import { db } from '../fine/db.js';
+import { supabase } from '../supabaseClient.js';
 
 const router = express.Router();
 
 router.get('/', async (_req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM levels');
-    res.json(rows);
+    const { data, error } = await supabase.from('levels').select('*');
+    if (error) throw error;
+    res.json(data);
   } catch (err) {
     console.error('Error al obtener niveles:', err);
     res.status(500).json({ error: 'Error interno del servidor' });
@@ -21,11 +22,13 @@ router.post('/', async (req, res) => {
     return res.status(400).json({ error: 'Faltan campos' });
   }
   try {
-    const [result] = await db.query(
-      'INSERT INTO levels (name, description) VALUES (?, ?)',
-      [name, description || null]
-    );
-    res.status(201).json({ id: result.insertId, name, description });
+    const { data, error } = await supabase
+      .from('levels')
+      .insert({ name, description: description || null })
+      .select()
+      .single();
+    if (error) throw error;
+    res.status(201).json({ id: data.id, name, description });
   } catch (err) {
     console.error('Error al crear nivel:', err);
     res.status(500).json({ error: 'Error interno del servidor' });

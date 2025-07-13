@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { db } from './db.js';
+import { supabase } from '../supabaseClient.js';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -21,8 +21,9 @@ app.use(express.json());
 // Obtener todos los usuarios
 app.get('/api/users', async (_req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM users');
-    res.json(rows);
+    const { data, error } = await supabase.from('users').select('*');
+    if (error) throw error;
+    res.json(data);
   } catch (err) {
     console.error('Error en /api/users:', err);
     res.status(500).json({ error: 'Database error' });
@@ -43,18 +44,22 @@ app.post('/api/signup', async (req, res) => {
   }
 
   try {
-    const [exists] = await db.query('SELECT id FROM users WHERE email = ?', [email]);
-    if (exists.length > 0) {
+    const { data: exists, error: existsErr } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email);
+    if (existsErr) throw existsErr;
+    if (exists && exists.length > 0) {
       return res.status(400).json({ error: 'El email ya existe' });
     }
 
-    const [result] = await db.query(
-      'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
-      [name, email, password, role]
-    );
-
-    const user = { id: result.insertId, name, email, role };
-    res.status(201).json({ success: true, user });
+    const { data, error } = await supabase
+      .from('users')
+      .insert({ name, email, password, role })
+      .select('id, name, email, role')
+      .single();
+    if (error) throw error;
+    res.status(201).json({ success: true, user: data });
   } catch (err) {
     console.error('Error en /api/signup:', err);
     res.status(500).json({ error: 'Error en el servidor' });
@@ -73,18 +78,20 @@ app.post('/api/login', async (req, res) => {
   }
 
   try {
-    const [rows] = await db.query(
-      'SELECT id, name, email, role FROM users WHERE email = ? AND password = ?',
-      [email, password]
-    );
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, name, email, role')
+      .eq('email', email)
+      .eq('password', password)
+      .maybeSingle();
 
-    if (rows.length === 0) {
+    if (error || !data) {
       console.log('Credenciales incorrectas para usuario:', email);
       return res.status(401).json({ error: 'Credenciales incorrectas' });
     }
 
     console.log('Login exitoso para usuario:', email);
-    res.json({ success: true, user: rows[0] });
+    res.json({ success: true, user: data });
   } catch (err) {
     console.error('Error en /api/login:', err);
     res.status(500).json({ error: 'Error en el servidor' });
@@ -96,16 +103,17 @@ app.get('/api/user/:email', async (req, res) => {
   const { email } = req.params;
 
   try {
-    const [rows] = await db.query(
-      'SELECT id, name, email, role FROM users WHERE email = ?',
-      [email]
-    );
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, name, email, role')
+      .eq('email', email)
+      .maybeSingle();
 
-    if (rows.length === 0) {
+    if (error || !data) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
 
-    res.json(rows[0]);
+    res.json(data);
   } catch (err) {
     console.error('Error en /api/user/:email:', err);
     res.status(500).json({ error: 'Error al obtener el usuario' });
