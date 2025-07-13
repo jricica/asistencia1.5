@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { Loader2, Users, ClipboardCheck, BookOpen, School, ArrowRight } from "lucide-react";
+import { supabase } from "../../../supabaseClient";
 
 const TeacherGrades = () => {
   const [grades, setGrades] = useState([]);
@@ -21,17 +22,21 @@ const TeacherGrades = () => {
       if (!session) return;
 
       try {
-        // Obtener datos del maestro
-        const teacherRes = await fetch(`https://asistencia-1-5.onrender.com/api/teachers?userId=${session.id}`);
-        if (!teacherRes.ok) throw new Error("Failed to fetch teacher");
-        const teacher = await teacherRes.json();
+        const { data: teacher, error: teacherErr } = await supabase
+          .from('users')
+          .select('levelId')
+          .eq('id', session.id)
+          .eq('role', 'teacher')
+          .maybeSingle();
+        if (teacherErr || !teacher) throw teacherErr || new Error('Failed');
 
         setTeacherLevel(teacher.levelId);
 
-        // Obtener grados para ese nivel
-        const gradesRes = await fetch(`https://asistencia-1-5.onrender.com/api/grades?levelId=${teacher.levelId}`);
-        if (!gradesRes.ok) throw new Error("Failed to fetch grades");
-        const gradesData = await gradesRes.json();
+        const { data: gradesData, error: gradesErr } = await supabase
+          .from('grades')
+          .select('id, name, levelId, teacherId')
+          .eq('levelId', teacher.levelId);
+        if (gradesErr) throw gradesErr;
 
         setGrades(gradesData);
       } catch (error) {

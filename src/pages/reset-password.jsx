@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { supabase } from "../../supabaseClient";
 const ResetPassword = () => {
     const [password, setPassword] = useState("");
     const [errors, setErrors] = useState({});
@@ -35,14 +36,14 @@ const ResetPassword = () => {
         try {
             const body = { email, password };
             console.log('Reset password payload:', body);
-            const res = await fetch("https://asistencia-1-5.onrender.com/api/password-reset", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(body),
-            });
-            const data = await res.json();
-            if (!res.ok)
-                throw new Error(data?.error || "Failed");
+            const { error, data } = await supabase
+                .from('users')
+                .update({ password })
+                .eq('email', email)
+                .select('id')
+                .maybeSingle();
+            if (error || !data)
+                throw new Error(error?.message || "Failed");
             toast({ title: "Password updated" });
             navigate("/login", { replace: true });
         }

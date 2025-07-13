@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { supabase } from "../../supabaseClient";
 const RecoverPassword = () => {
     const [formData, setFormData] = useState({ email: "", recoveryWord: "" });
     const [errors, setErrors] = useState({});
@@ -44,14 +45,14 @@ const RecoverPassword = () => {
         setIsLoading(true);
         try {
             console.log('Recover password payload:', formData);
-            const res = await fetch("https://asistencia-1-5.onrender.com/api/recover-password", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData),
-            });
-            const data = await res.json();
-            if (!res.ok)
-                throw new Error(data?.error || "Invalid data");
+            const { data, error } = await supabase
+                .from('users')
+                .select('id')
+                .eq('email', formData.email)
+                .eq('recoveryWord', formData.recoveryWord)
+                .maybeSingle();
+            if (error || !data)
+                throw new Error(error?.message || "Invalid data");
             navigate(`/reset-password?email=${encodeURIComponent(formData.email)}`);
         }
         catch (err) {

@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { supabase } from "../../supabaseClient";
 
 export default function SignupForm() {
   const [isLoading, setIsLoading] = useState(false);
@@ -75,19 +76,22 @@ export default function SignupForm() {
 
     try {
       console.log('Signup payload:', formData);
-      const res = await fetch("https://asistencia-1-5.onrender.com/api/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      const { data, error } = await supabase
+        .from('users')
+        .insert({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          recoveryWord: formData.recoveryWord,
+          role: formData.role,
+        })
+        .select('id, name, email, role')
+        .single();
 
-      const data = await res.json();
-      console.log("Respuesta del backend:", data);
-
-      if (!res.ok) throw new Error(data?.error || "Signup failed");
+      if (error) throw new Error(error.message);
 
       toast({ title: "Account created", description: "Welcome!" });
-      setUser(data.user);
+      setUser(data);
       navigate("/dashboard");
     } catch (error) {
       toast({

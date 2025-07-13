@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { motion } from "framer-motion";
 import { Loader2, Users, ClipboardCheck, AlertTriangle, TrendingUp, Calendar } from "lucide-react";
+import { supabase } from "../../supabaseClient";
 
 const Dashboard = () => {
   const { user: session } = useUser();
@@ -24,16 +25,14 @@ useEffect(() => {
     if (!session?.email) return;
 
     try {
-      const res = await fetch(
-        `https://asistencia-1-5.onrender.com/api/user/${session.email}`,
-        {
-          headers: { Authorization: String(session.id) }
-        }
-      );
-      if (!res.ok) throw new Error("Usuario no encontrado");
+      const { data, error } = await supabase
+        .from('users')
+        .select('role')
+        .eq('email', session.email)
+        .maybeSingle();
+      if (error || !data) throw new Error('Usuario no encontrado');
 
-      const user = await res.json();
-      setUserRole(user.role);
+      setUserRole(data.role);
     } catch (err) {
       console.error("Error cargando rol:", err);
       setUserRole("teacher");
@@ -42,11 +41,6 @@ useEffect(() => {
 
     const fetchDashboardData = async () => {
       try {
-        if (session?.id) {
-          await fetch('https://asistencia-1-5.onrender.com/api/users', {
-            headers: { Authorization: String(session.id) }
-          });
-        }
 
         
         // Mock attendance by level data
