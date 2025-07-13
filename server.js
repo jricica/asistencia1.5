@@ -1,6 +1,6 @@
 import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { db } from './fine/db.js';
+import { supabase } from './supabaseClient.js';
 
 import teacherRoutes from './routes/teachers.js';
 import levelsRoutes from './routes/levels.js';
@@ -59,8 +59,12 @@ export const isAuthenticated = async (req, res, next) => {
   }
 
   try {
-    const [rows] = await db.query('SELECT id FROM users WHERE id = ?', [userId]);
-    if (rows.length === 0) {
+    const { data, error } = await supabase
+      .from('users')
+      .select('id')
+      .eq('id', userId)
+      .single();
+    if (error || !data) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
@@ -78,14 +82,16 @@ app.post('/api/login', async (req, res) => {
     return res.status(400).json({ error: 'Faltan campos' });
   }
   try {
-    const [rows] = await db.query(
-      'SELECT id, name, email, role FROM users WHERE email = ? AND password = ?',
-      [email, password]
-    );
-    if (rows.length === 0) {
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, name, email, role')
+      .eq('email', email)
+      .eq('password', password)
+      .maybeSingle();
+    if (error || !data) {
       return res.status(401).json({ error: 'Credenciales incorrectas' });
     }
-    res.json({ user: rows[0] });
+    res.json({ user: data });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error en el servidor' });
@@ -104,17 +110,23 @@ app.post('/api/signup', async (req, res) => {
   }
 
   try {
-    const [exists] = await db.query('SELECT id FROM users WHERE email = ?', [email]);
-    if (exists.length) {
+    const { data: exists, error: existsErr } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email);
+    if (existsErr) throw existsErr;
+    if (exists && exists.length) {
       return res.status(400).json({ error: 'El email ya existe' });
     }
 
-    const [result] = await db.query(
-      'INSERT INTO users (name, email, password, recoveryWord, role) VALUES (?, ?, ?, ?, ?)',
-      [name, email, password, recoveryWord, role]
-    );
+    const { data, error } = await supabase
+      .from('users')
+      .insert({ name, email, password, recoveryWord, role })
+      .select()
+      .single();
+    if (error) throw error;
 
-    const user = { id: result.insertId, name, email, role };
+    const user = { id: data.id, name, email, role };
     res.status(201).json({ user });
   } catch (err) {
     console.error(err);
@@ -129,17 +141,19 @@ app.post('/api/recover-password', async (req, res) => {
   }
 
   try {
-    const [rows] = await db.query(
-      'SELECT id FROM users WHERE email = ? AND recoveryWord = ?',
-      [email, recoveryWord]
-    );
+    const { data, error } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .eq('recoveryWord', recoveryWord)
+      .maybeSingle();
 
-    if (rows.length === 0) {
+    if (error || !data) {
       return res.status(401).json({ error: 'Datos incorrectos' });
     }
 
     const token = uuidv4();
-    recoveryTokens.set(token, rows[0].id);
+    recoveryTokens.set(token, data.id);
     setTimeout(() => recoveryTokens.delete(token), TOKEN_EXPIRY_MS);
 
     res.json({ token });
@@ -161,7 +175,11 @@ app.post('/api/reset-password', async (req, res) => {
   }
 
   try {
-    await db.query('UPDATE users SET password = ? WHERE id = ?', [password, userId]);
+    const { error } = await supabase
+      .from('users')
+      .update({ password })
+      .eq('id', userId);
+    if (error) throw error;
     recoveryTokens.delete(token);
     res.json({ success: true });
   } catch (err) {
@@ -177,12 +195,14 @@ app.post('/api/password-recovery', async (req, res) => {
   }
 
   try {
-    const [rows] = await db.query(
-      'SELECT id FROM users WHERE email = ? AND recoveryWord = ?',
-      [email, recoveryWord]
-    );
+    const { data, error } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .eq('recoveryWord', recoveryWord)
+      .maybeSingle();
 
-    if (rows.length === 0) {
+    if (error || !data) {
       return res.status(401).json({ error: 'Datos incorrectos' });
     }
 
@@ -200,9 +220,14 @@ app.post('/api/password-reset', async (req, res) => {
   }
 
   try {
-    const [result] = await db.query('UPDATE users SET password = ? WHERE email = ?', [password, email]);
+    const { error, data } = await supabase
+      .from('users')
+      .update({ password })
+      .eq('email', email)
+      .select('id')
+      .maybeSingle();
 
-    if (result.affectedRows === 0) {
+    if (error || !data) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
 
@@ -215,8 +240,11 @@ app.post('/api/password-reset', async (req, res) => {
 
 app.get('/api/users', isAuthenticated, async (_req, res) => {
   try {
-    const [rows] = await db.query('SELECT id, name, email, role FROM users');
-    res.json(rows);
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, name, email, role');
+    if (error) throw error;
+    res.json(data);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Database error' });
@@ -226,11 +254,15 @@ app.get('/api/users', isAuthenticated, async (_req, res) => {
 app.get('/api/user/:email', isAuthenticated, async (req, res) => {
   const { email } = req.params;
   try {
-    const [rows] = await db.query('SELECT id, name, email, role FROM users WHERE email = ?', [email]);
-    if (rows.length === 0) {
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, name, email, role')
+      .eq('email', email)
+      .maybeSingle();
+    if (error || !data) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
-    res.json(rows[0]);
+    res.json(data);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Database error' });
@@ -240,8 +272,9 @@ app.get('/api/user/:email', isAuthenticated, async (req, res) => {
 if (IS_DEV) {
   app.get('/api/debug/users', async (_req, res) => {
     try {
-      const [rows] = await db.query('SELECT * FROM users');
-      res.json(rows);
+      const { data, error } = await supabase.from('users').select('*');
+      if (error) throw error;
+      res.json(data);
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: 'Error en modo debug' });

@@ -1,23 +1,27 @@
 // routes/students.js
 import express from "express";
-import { db } from "../fine/db.js";
+import { supabase } from "../supabaseClient.js";
 
 const router = express.Router();
 
 // Obtener todos los estudiantes
 router.get("/", async (req, res) => {
   try {
-    let query =
-      `SELECT students.id, students.name, students.email, students.gradeId, grades.name AS grade
-       FROM students
-       JOIN grades ON students.gradeId = grades.id`;
-    const params = [];
-    if (req.query.gradeId) {
-      query += " WHERE students.gradeId = ?";
-      params.push(req.query.gradeId);
-    }
-    const [rows] = await db.query(query, params);
-    res.json(rows);
+    const gradeId = req.query.gradeId;
+    let query = supabase
+      .from("students")
+      .select("id,name,email,gradeId,grades(name)");
+    if (gradeId) query = query.eq("gradeId", gradeId);
+    const { data, error } = await query;
+    if (error) throw error;
+    const formatted = data.map(s => ({
+      id: s.id,
+      name: s.name,
+      email: s.email,
+      gradeId: s.gradeId,
+      grade: s.grades?.name || null,
+    }));
+    res.json(formatted);
   } catch (err) {
     console.error("Error al obtener estudiantes:", err);
     res.status(500).json({ error: "Error interno del servidor" });
@@ -31,11 +35,13 @@ router.post("/", async (req, res) => {
     return res.status(400).json({ error: "Faltan campos" });
   }
   try {
-    const [result] = await db.query(
-      "INSERT INTO students (name, email, gradeId) VALUES (?, ?, ?)",
-      [name, email || null, gradeId]
-    );
-    res.status(201).json({ id: result.insertId, name, email, gradeId });
+    const { data, error } = await supabase
+      .from('students')
+      .insert({ name, email: email || null, gradeId })
+      .select('id, name, email, gradeId')
+      .single();
+    if (error) throw error;
+    res.status(201).json(data);
   } catch (err) {
     console.error("Error al crear estudiante:", err);
     res.status(500).json({ error: "Error interno del servidor" });
