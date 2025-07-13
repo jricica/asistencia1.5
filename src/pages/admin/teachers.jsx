@@ -9,8 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Plus, Trash2, UserPlus } from "lucide-react";
-
-const API_BASE_URL = "https://asistencia-1-5.onrender.com";
+import { supabase } from "../../../supabaseClient";
 
 const AdminTeachers = () => {
   const [teachers, setTeachers] = useState([]);
@@ -27,9 +26,11 @@ const AdminTeachers = () => {
   useEffect(() => {
     const fetchTeachers = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/teachers`);
-        if (!res.ok) throw new Error("Failed to fetch teachers");
-        const data = await res.json();
+        const { data, error } = await supabase
+          .from('users')
+          .select('id, name, email')
+          .eq('role', 'teacher');
+        if (error) throw error;
 
         setTeachers(data);
       } catch (error) {
@@ -68,15 +69,18 @@ const AdminTeachers = () => {
 
     try {
       console.log('New teacher data:', newTeacher);
-      const res = await fetch(`${API_BASE_URL}/teachers`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newTeacher),
-      });
+      const { data: created, error } = await supabase
+        .from('users')
+        .insert({
+          name: newTeacher.name,
+          email: newTeacher.email,
+          password: newTeacher.password,
+          role: 'teacher',
+        })
+        .select('id, name, email, role')
+        .single();
 
-      if (!res.ok) throw new Error("Failed to add teacher");
-
-      const created = await res.json();
+      if (error) throw new Error(error.message);
 
       setTeachers((prev) => [...prev, created]);
       
@@ -105,11 +109,12 @@ const AdminTeachers = () => {
 
   const handleDeleteTeacher = async (teacherId) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/teachers/${teacherId}`, {
-        method: "DELETE",
-      });
+      const { error } = await supabase
+        .from('users')
+        .delete()
+        .eq('id', teacherId);
 
-      if (!res.ok) throw new Error("Failed to delete teacher");
+      if (error) throw new Error(error.message);
 
       setTeachers((prev) => prev.filter((teacher) => teacher.id !== teacherId));
       

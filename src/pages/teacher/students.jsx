@@ -10,8 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Plus, Trash2, ArrowLeft, UserPlus } from "lucide-react";
-
-const API_BASE_URL = "https://asistencia-1-5.onrender.com/api";
+import { supabase } from "../../../supabaseClient";
 
 const TeacherStudents = () => {
   const [searchParams] = useSearchParams();
@@ -36,13 +35,18 @@ const TeacherStudents = () => {
       if (!gradeId) return;
 
       try {
-        const gradeRes = await fetch(`${API_BASE_URL}/grades/${gradeId}`);
-        if (!gradeRes.ok) throw new Error("Failed to fetch grade");
-        const gradeData = await gradeRes.json();
+        const { data: gradeData, error: gradeErr } = await supabase
+          .from('grades')
+          .select('id, name, levelId, teacherId')
+          .eq('id', gradeId)
+          .maybeSingle();
+        if (gradeErr || !gradeData) throw gradeErr || new Error('Failed');
 
-        const studentsRes = await fetch(`${API_BASE_URL}/students?gradeId=${gradeId}`);
-        if (!studentsRes.ok) throw new Error("Failed to fetch students");
-        const studentsData = await studentsRes.json();
+        const { data: studentsData, error: studentsErr } = await supabase
+          .from('students')
+          .select('id, name, email, gradeId')
+          .eq('gradeId', gradeId);
+        if (studentsErr) throw studentsErr;
 
         setGrade(gradeData);
         setStudents(studentsData);
@@ -87,14 +91,13 @@ const TeacherStudents = () => {
         gradeId: parseInt(gradeId),
       };
       console.log('New student data:', body);
-      const res = await fetch(`${API_BASE_URL}/students`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
+      const { data: created, error } = await supabase
+        .from('students')
+        .insert(body)
+        .select('id, name, email, gradeId')
+        .single();
 
-      if (!res.ok) throw new Error("Failed to add student");
-      const created = await res.json();
+      if (error) throw new Error(error.message);
 
       setStudents((prev) => [...prev, created]);
       
@@ -134,13 +137,12 @@ const TeacherStudents = () => {
     }
     
     try {
-      const res = await fetch(`${API_BASE_URL}/students/${studentToDelete.id}`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: deleteConfirmPassword })
-      });
+      const { error } = await supabase
+        .from('students')
+        .delete()
+        .eq('id', studentToDelete.id);
 
-      if (!res.ok) throw new Error("Failed to delete student");
+      if (error) throw new Error(error.message);
 
       setStudents((prev) => prev.filter((student) => student.id !== studentToDelete.id));
       

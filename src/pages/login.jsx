@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, School } from "lucide-react";
+import { supabase } from "../../supabaseClient";
 import { motion } from "framer-motion";
 
 const LoginForm = () => {
@@ -66,25 +67,19 @@ const LoginForm = () => {
     setIsLoading(true);
 
     try {
-      const body = {
-        email: formData.email,
-        password: formData.password,
-      };
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, name, email, role')
+        .eq('email', formData.email)
+        .eq('password', formData.password)
+        .maybeSingle();
 
-      const res = await fetch("https://asistencia-1-5.onrender.com/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data?.error || "Login failed");
+      if (error || !data) {
+        throw new Error(error?.message || "Login failed");
       }
 
       toast({ title: "Éxito", description: "Sesión iniciada correctamente." });
-      setUser(data.user);
+      setUser(data);
       navigate("/dashboard");
     } catch (error) {
       toast({

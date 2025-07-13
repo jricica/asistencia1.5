@@ -11,8 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Plus, Trash2, School, BookOpen } from "lucide-react";
-
-const API_BASE_URL = "https://asistencia-1-5.onrender.com";
+import { supabase } from "../../../supabaseClient";
 
 const AdminLevels = () => {
   const [levels, setLevels] = useState([]);
@@ -42,19 +41,23 @@ const AdminLevels = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const levelRes = await fetch(`${API_BASE_URL}/levels`);
-        if (!levelRes.ok) throw new Error("Failed to fetch levels");
-        const levelsData = await levelRes.json();
+        const { data: levelsData, error: levelErr } = await supabase
+          .from('levels')
+          .select('*');
+        if (levelErr) throw levelErr;
         setLevels(levelsData);
 
-        const gradeRes = await fetch(`${API_BASE_URL}/grades`);
-        if (!gradeRes.ok) throw new Error("Failed to fetch grades");
-        const gradesData = await gradeRes.json();
+        const { data: gradesData, error: gradeErr } = await supabase
+          .from('grades')
+          .select('id, name, levelId, teacherId');
+        if (gradeErr) throw gradeErr;
         setGrades(gradesData);
 
-        const teacherRes = await fetch(`${API_BASE_URL}/teachers`);
-        if (!teacherRes.ok) throw new Error("Failed to fetch teachers");
-        const teachersData = await teacherRes.json();
+        const { data: teachersData, error: teacherErr } = await supabase
+          .from('users')
+          .select('id, name, email')
+          .eq('role', 'teacher');
+        if (teacherErr) throw teacherErr;
         setTeachers(teachersData);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -100,15 +103,16 @@ const AdminLevels = () => {
     setIsAddingLevel(true);
     
     try {
-      const res = await fetch(`${API_BASE_URL}/levels`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newLevel),
-      });
+      const { data: created, error } = await supabase
+        .from('levels')
+        .insert({
+          name: newLevel.name,
+          description: newLevel.description || null,
+        })
+        .select('id, name, description')
+        .single();
 
-      if (!res.ok) throw new Error("Failed to add level");
-
-      const created = await res.json();
+      if (error) throw new Error(error.message);
 
       setLevels((prev) => [...prev, created]);
       
@@ -158,15 +162,13 @@ const AdminLevels = () => {
             : null,
       };
 
-      const res = await fetch(`${API_BASE_URL}/grades`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const { data: created, error } = await supabase
+        .from('grades')
+        .insert(payload)
+        .select('id, name, levelId, teacherId')
+        .single();
 
-      if (!res.ok) throw new Error("Failed to add grade");
-
-      const created = await res.json();
+      if (error) throw new Error(error.message);
 
       setGrades((prev) => [...prev, created]);
       
@@ -208,11 +210,12 @@ const AdminLevels = () => {
       }
       
 
-      const res = await fetch(`${API_BASE_URL}/levels/${levelId}`, {
-        method: "DELETE",
-      });
+      const { error } = await supabase
+        .from('levels')
+        .delete()
+        .eq('id', levelId);
 
-      if (!res.ok) throw new Error("Failed to delete level");
+      if (error) throw new Error(error.message);
 
       setLevels((prev) => prev.filter((level) => level.id !== levelId));
       
@@ -231,11 +234,12 @@ const AdminLevels = () => {
 
   const handleDeleteGrade = async (gradeId) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/grades/${gradeId}`, {
-        method: "DELETE",
-      });
+      const { error } = await supabase
+        .from('grades')
+        .delete()
+        .eq('id', gradeId);
 
-      if (!res.ok) throw new Error("Failed to delete grade");
+      if (error) throw new Error(error.message);
 
       setGrades((prev) => prev.filter((grade) => grade.id !== gradeId));
       
