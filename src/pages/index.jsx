@@ -6,13 +6,13 @@ import { motion } from "framer-motion";
 
 const Index = () => {
   const navigate = useNavigate();
-  const { user } = useUser();
+  const { user, isLoading } = useUser();
 
   useEffect(() => {
-    if (user) {
+    if (!isLoading && user) {
       navigate("/dashboard");
     }
-  }, [user, navigate]);
+  }, [user, isLoading, navigate]);
 
   return (
     <main className="w-full min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-background to-blue-50 dark:from-background dark:to-blue-950/20 text-foreground p-4">

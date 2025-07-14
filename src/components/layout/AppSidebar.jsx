@@ -1,21 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
-import { 
-  Home, BarChart2, Settings, School, 
-  Layers, UserCog, Users, ClipboardList, 
-  BookOpen 
-} from "lucide-react";
-
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar";
-
+  Home, BarChart2, Settings, School,
+  Layers, UserCog, Users, ClipboardList,
+  BookOpen
+} from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/context/UserContext";
@@ -26,15 +14,13 @@ export function AppSidebar() {
 
   if (!session || !session.role) {
     return (
-      <Sidebar className="border-r bg-background">
-        <SidebarContent className="p-4 text-muted-foreground text-sm">
-          Loading menu...
-        </SidebarContent>
-      </Sidebar>
+      <aside className="w-64 p-4 border-r bg-background text-sm text-muted-foreground">
+        Loading menu...
+      </aside>
     );
   }
 
-  const userRole = session.role || "";
+  const userRole = session.role;
 
   const getMenuItems = () => {
     const baseItems = [
@@ -54,7 +40,7 @@ export function AppSidebar() {
       { key: "admin-levels", title: "Levels", url: "/admin/levels", icon: School },
       { key: "admin-projections", title: "Projections", url: "/admin/projections", icon: BarChart2 },
     ];
-    
+
     if (userRole === "admin") return [...baseItems, ...teacherItems, ...adminExtraItems];
     if (userRole === "teacher") return [...baseItems, ...teacherItems];
     return baseItems;
@@ -76,81 +62,60 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className="border-r bg-background">
-      <SidebarContent>
-        <div className="flex items-center gap-2 px-4 py-4">
-          <School className="h-6 w-6 text-primary" />
-          <span className="font-bold text-lg">School System</span>
-        </div>
+    <aside className="w-64 min-h-screen border-r bg-background p-4 flex flex-col">
+      {/* Header */}
+      <div className="flex items-center gap-2 mb-6">
+        <School className="h-6 w-6 text-primary" />
+        <span className="font-bold text-lg">School System</span>
+      </div>
 
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-medium text-muted-foreground">
-            {userRole === "admin" ? "ADMINISTRATION" : "NAVIGATION"}
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <motion.div
-                variants={container}
-                initial="hidden"
-                animate="show"
-                className="space-y-1"
-              >
-                {menuItems.map((itemData) => (
-                  <motion.div key={itemData.key} variants={item}>
-                    <SidebarMenuItem>
-                      <SidebarMenuButton
-                        asChild
-                        className={cn(
-                          "transition-all duration-200 hover:bg-muted",
-                          location.pathname === itemData.url &&
-                            "bg-primary/10 text-primary font-medium"
-                        )}
-                      >
-                        <Link to={itemData.url} className="flex items-center">
-                          <itemData.icon
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              location.pathname === itemData.url
-                                ? "text-primary"
-                                : "text-muted-foreground"
-                            )}
-                          />
-                          <span>{itemData.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  </motion.div>
-                ))}
-              </motion.div>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+      {/* Menu */}
+      <motion.div
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="flex-1 space-y-1"
+      >
+        {menuItems.map(({ key, url, title, icon: Icon }) => (
+          <motion.div key={key} variants={item}>
+            <Link
+              to={url}
+              className={cn(
+                "flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors",
+                location.pathname === url
+                  ? "bg-primary/10 text-primary font-semibold"
+                  : "text-muted-foreground hover:bg-muted"
+              )}
+            >
+              <Icon className="w-4 h-4" />
+              {title}
+            </Link>
+          </motion.div>
+        ))}
+      </motion.div>
 
-        <div className="mt-auto px-4 py-4">
-          <div className="rounded-lg bg-primary/10 p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold">
-                {userRole === "admin" ? "A" : userRole === "teacher" ? "T" : "S"}
-              </div>
-              <div>
-                <p className="text-sm font-medium">
-                  {userRole === "admin" ? "Admin" : userRole === "teacher" ? "Teacher" : "Student"} Mode
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {userRole === "admin" ? "Full access" : userRole === "teacher" ? "Limited access" : "Student view"}
-                </p>
-              </div>
+      {/* Footer */}
+      <div className="mt-auto pt-6">
+        <div className="rounded-lg bg-primary/10 p-4 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold">
+              {userRole === "admin" ? "A" : userRole === "teacher" ? "T" : "S"}
             </div>
-            <div className="text-xs text-muted-foreground">
-              {userRole === "admin"
-                ? "You have full administrative privileges"
-                : userRole === "teacher"
-                ? "You can manage grades and students"
-                : "View your attendance and reports"}
+            <div>
+              <p className="font-medium">
+                {userRole === "admin" ? "Admin" : userRole === "teacher" ? "Teacher" : "Student"} Mode
+              </p>
+              <p className="text-xs">
+                {userRole === "admin"
+                  ? "Full access"
+                  : userRole === "teacher"
+                  ? "Limited access"
+                  : "Student view"}
+              </p>
             </div>
           </div>
         </div>
-      </SidebarContent>
-    </Sidebar>
+      </div>
+    </aside>
   );
 }

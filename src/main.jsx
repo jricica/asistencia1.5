@@ -40,7 +40,7 @@ createRoot(document.getElementById("root")).render(
     <TooltipProvider>
       <ThemeProvider defaultTheme="light">
         <UserProvider> {/* ✅ ENVUELVE TODO AQUÍ */}
-          <HashRouter basename={import.meta.env.BASE_URL}>
+          <HashRouter>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<LoginForm />} />

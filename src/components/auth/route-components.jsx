@@ -2,12 +2,12 @@ import { Navigate } from "react-router-dom";
 import { useUser } from "@/context/UserContext";
 
 export const ProtectedRoute = ({ Component, roles = [] }) => {
-    const { user } = useUser();
+  const { user, isLoading } = useUser();
 
-    if (!user) return <Navigate to='/login' />;
-    if (roles && !roles.includes(user.role)) {
-        return <Navigate to='/dashboard' replace />;
-    }
+  if (isLoading) return null; // o un spinner
 
-    return <Component />;
+  if (!user) return <Navigate to="/login" />;
+  if (roles.length && !roles.includes(user.role)) return <Navigate to="/dashboard" replace />;
+
+  return <Component />;
 };

@@ -1,12 +1,23 @@
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/Dashboard";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card, CardContent, CardDescription, CardHeader, CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter,
+  DialogHeader, DialogTitle, DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
+  AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Plus, Trash2, UserPlus } from "lucide-react";
 import { supabase } from "../../../supabaseClient";
@@ -14,11 +25,7 @@ import { supabase } from "../../../supabaseClient";
 const AdminTeachers = () => {
   const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [newTeacher, setNewTeacher] = useState({
-    name: "",
-    email: "",
-    password: "",
-  });
+  const [newTeacher, setNewTeacher] = useState({ name: "", email: "", password: "" });
   const [isAddingTeacher, setIsAddingTeacher] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
@@ -27,14 +34,11 @@ const AdminTeachers = () => {
     const fetchTeachers = async () => {
       try {
         const { data, error } = await supabase
-          .from('users')
-          .select('id, name, email')
-          .eq('role', 'teacher');
+          .from("teachers")
+          .select("id, name, email, created_at");
         if (error) throw error;
-
         setTeachers(data);
       } catch (error) {
-        console.error("Error fetching teachers:", error);
         toast({
           title: "Error",
           description: "Failed to load teachers. Please try again.",
@@ -55,7 +59,6 @@ const AdminTeachers = () => {
 
   const handleAddTeacher = async (e) => {
     e.preventDefault();
-    
     if (!newTeacher.name || !newTeacher.email || !newTeacher.password) {
       toast({
         title: "Error",
@@ -64,42 +67,41 @@ const AdminTeachers = () => {
       });
       return;
     }
-    
-    setIsAddingTeacher(true);
 
+    setIsAddingTeacher(true);
     try {
-      console.log('New teacher data:', newTeacher);
-      const { data: created, error } = await supabase
-        .from('users')
+      // 1. Crear cuenta en Supabase Auth
+      const { data: authUser, error: signUpError } = await supabase.auth.signUp({
+        email: newTeacher.email,
+        password: newTeacher.password,
+      });
+      if (signUpError) throw signUpError;
+
+      // 2. Guardar en tabla teachers
+      const { data: teacherInserted, error: insertError } = await supabase
+        .from("teachers")
         .insert({
+          id: authUser.user.id,
           name: newTeacher.name,
           email: newTeacher.email,
-          password: newTeacher.password,
-          role: 'teacher',
         })
-        .select('id, name, email, role')
+        .select()
         .single();
 
-      if (error) throw new Error(error.message);
+      if (insertError) throw insertError;
 
-      setTeachers((prev) => [...prev, created]);
-      
-      setNewTeacher({
-        name: "",
-        email: "",
-        password: "",
-      });
-      
+      setTeachers((prev) => [...prev, teacherInserted]);
+      setNewTeacher({ name: "", email: "", password: "" });
       setIsDialogOpen(false);
-      
+
       toast({
         title: "Success",
-        description: "Teacher added successfully.",
+        description: "Teacher created successfully.",
       });
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to add teacher. Please try again.",
+        description: error.message || "Failed to add teacher.",
         variant: "destructive",
       });
     } finally {
@@ -109,19 +111,10 @@ const AdminTeachers = () => {
 
   const handleDeleteTeacher = async (teacherId) => {
     try {
-      const { error } = await supabase
-        .from('users')
-        .delete()
-        .eq('id', teacherId);
-
+      const { error } = await supabase.from("teachers").delete().eq("id", teacherId);
       if (error) throw new Error(error.message);
-
-      setTeachers((prev) => prev.filter((teacher) => teacher.id !== teacherId));
-      
-      toast({
-        title: "Success",
-        description: "Teacher deleted successfully.",
-      });
+      setTeachers((prev) => prev.filter((t) => t.id !== teacherId));
+      toast({ title: "Success", description: "Teacher deleted successfully." });
     } catch (error) {
       toast({
         title: "Error",
@@ -137,99 +130,50 @@ const AdminTeachers = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">Teachers</h1>
-            <p className="text-muted-foreground">
-              Manage teachers in the system
-            </p>
+            <p className="text-muted-foreground">Manage teachers in the system</p>
           </div>
-          
+
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button>
-                <UserPlus className="mr-2 h-4 w-4" />
-                Add Teacher
+                <UserPlus className="mr-2 h-4 w-4" /> Add Teacher
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Add New Teacher</DialogTitle>
-                <DialogDescription>
-                  Enter the details for the new teacher. They will receive an email with login instructions.
-                </DialogDescription>
+                <DialogDescription>Enter the details for the new teacher.</DialogDescription>
               </DialogHeader>
-              
               <form onSubmit={handleAddTeacher}>
                 <div className="space-y-4 py-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">Full Name</Label>
-                    <Input
-                      id="name"
-                      name="name"
-                      value={newTeacher.name}
-                      onChange={handleInputChange}
-                      disabled={isAddingTeacher}
-                      required
-                    />
+                    <Input id="name" name="name" value={newTeacher.name} onChange={handleInputChange} required disabled={isAddingTeacher} />
                   </div>
-                  
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={newTeacher.email}
-                      onChange={handleInputChange}
-                      disabled={isAddingTeacher}
-                      required
-                    />
+                    <Input id="email" name="email" type="email" value={newTeacher.email} onChange={handleInputChange} required disabled={isAddingTeacher} />
                   </div>
-                  
                   <div className="space-y-2">
-                    <Label htmlFor="password">Initial Password</Label>
-                    <Input
-                      id="password"
-                      name="password"
-                      type="password"
-                      value={newTeacher.password}
-                      onChange={handleInputChange}
-                      disabled={isAddingTeacher}
-                      required
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      The teacher will be prompted to change this password on first login.
-                    </p>
+                    <Label htmlFor="password">Password</Label>
+                    <Input id="password" name="password" type="password" value={newTeacher.password} onChange={handleInputChange} required disabled={isAddingTeacher} />
                   </div>
                 </div>
-                
                 <DialogFooter>
-                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isAddingTeacher}>
-                    Cancel
-                  </Button>
+                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isAddingTeacher}>Cancel</Button>
                   <Button type="submit" disabled={isAddingTeacher}>
-                    {isAddingTeacher ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Adding...
-                      </>
-                    ) : (
-                      <>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Add Teacher
-                      </>
-                    )}
+                    {isAddingTeacher ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Adding...</>) : (<><Plus className="mr-2 h-4 w-4" /> Add</>)}
                   </Button>
                 </DialogFooter>
               </form>
             </DialogContent>
           </Dialog>
         </div>
-        
+
         <Card>
           <CardHeader>
             <CardTitle>Teacher List</CardTitle>
-            <CardDescription>
-              Manage all teachers in the system
-            </CardDescription>
+            <CardDescription>Manage all teachers in the system</CardDescription>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -249,37 +193,29 @@ const AdminTeachers = () => {
                 <TableBody>
                   {teachers.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center py-8">
-                        No teachers found. Add your first teacher to get started.
-                      </TableCell>
+                      <TableCell colSpan={4} className="text-center py-8">No teachers found.</TableCell>
                     </TableRow>
                   ) : (
                     teachers.map((teacher) => (
                       <TableRow key={teacher.id}>
-                        <TableCell className="font-medium">{teacher.name}</TableCell>
+                        <TableCell>{teacher.name}</TableCell>
                         <TableCell>{teacher.email}</TableCell>
-                        <TableCell>{teacher.createdAt}</TableCell>
+                        <TableCell>{new Date(teacher.created_at).toLocaleDateString()}</TableCell>
                         <TableCell className="text-right">
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10">
                                 <Trash2 className="h-4 w-4" />
-                                <span className="sr-only">Delete</span>
                               </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                               <AlertDialogHeader>
                                 <AlertDialogTitle>Delete Teacher</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Are you sure you want to delete {teacher.name}? This action cannot be undone.
-                                </AlertDialogDescription>
+                                <AlertDialogDescription>Are you sure you want to delete {teacher.name}?</AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleDeleteTeacher(teacher.id)}
-                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                >
+                                <AlertDialogAction onClick={() => handleDeleteTeacher(teacher.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                                   Delete
                                 </AlertDialogAction>
                               </AlertDialogFooter>

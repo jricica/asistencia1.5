@@ -4,8 +4,16 @@ CREATE TABLE users (
   name VARCHAR(255) NOT NULL,
   email VARCHAR(255) UNIQUE NOT NULL,
   password VARCHAR(255) NOT NULL,
-  recoveryWord VARCHAR(255) NOT NULL,
+  recoveryword VARCHAR(255) NOT NULL,
   role VARCHAR(10) CHECK (role IN ('admin', 'teacher', 'student')) NOT NULL,
+  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create Teachers table (for teachers added manually)
+CREATE TABLE teachers (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
   createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -81,5 +89,5 @@ INSERT INTO settings (key, value) VALUES ('attendanceStartTime', '08:00');
 INSERT INTO settings (key, value) VALUES ('attendanceEndTime', '09:00');
 
 -- Insert default admin user
-INSERT INTO users (name, email, password, recoveryWord, role)
+INSERT INTO users (name, email, password, recoveryword, role)
 VALUES ('Admin', 'admin@school.com', 'admin123', 'default', 'admin');

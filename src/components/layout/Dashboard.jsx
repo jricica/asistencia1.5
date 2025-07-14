@@ -15,21 +15,12 @@ export function DashboardLayout({ children }) {
   }, []);
 
   useEffect(() => {
-    // Close sidebar on mobile by default
-    if (isMobile) {
-      setSidebarOpen(false);
-    } else {
-      setSidebarOpen(true);
-    }
+    setSidebarOpen(!isMobile);
   }, [isMobile]);
 
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
+  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
-  if (!mounted) {
-    return null;
-  }
+  if (!mounted) return null;
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -53,7 +44,7 @@ export function DashboardLayout({ children }) {
             </motion.div>
           )}
         </AnimatePresence>
-        
+
         <motion.main
           className={cn(
             "flex-1 overflow-auto transition-all duration-200 ease-in-out p-4 md:p-6",
@@ -63,12 +54,9 @@ export function DashboardLayout({ children }) {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}
         >
-          <div className="container mx-auto max-w-7xl">
-            {children}
-          </div>
+          <div className="container mx-auto max-w-7xl">{children}</div>
         </motion.main>
-        
-        {/* Mobile overlay */}
+
         {isMobile && sidebarOpen && (
           <motion.div
             initial={{ opacity: 0 }}
