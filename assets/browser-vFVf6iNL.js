@@ -1,1 +1,0 @@
-import{Headers as e,Request as t,Response as n,browser_default as r,fetch as i,init_browser as a}from"./index-CeBRMAL4.js";a();export{e as Headers,t as Request,n as Response,r as default,i as fetch};
