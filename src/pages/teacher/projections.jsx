@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { supabase } from "../../../supabaseClient";
 
 const TeacherProjections = () => {
   const [loading, setLoading] = useState(true);
@@ -27,172 +28,41 @@ const TeacherProjections = () => {
       try {
 
         
-        // Mock grades
-        const mockGrades = [
-          { id: 1, name: "Grade 1" },
-          { id: 2, name: "Grade 2" },
-          { id: 3, name: "Grade 3" },
-          { id: 4, name: "Grade 4" },
-          { id: 5, name: "Grade 5" },
-        ];
-        
-        // Mock students
-        const mockStudents = [
-          { id: 1, name: "Alice Johnson", gradeId: 1 },
-          { id: 2, name: "Bob Smith", gradeId: 1 },
-          { id: 3, name: "Charlie Brown", gradeId: 2 },
-          { id: 4, name: "Diana Prince", gradeId: 2 },
-          { id: 5, name: "Edward Cullen", gradeId: 3 },
-        ];
-        
-        // Mock grade attendance data
-        const mockGradeAttendance = [
-          { 
-            grade: "Grade 1", 
-            data: [
-              { week: "Week 1", present: 92, absent: 5, late: 3 },
-              { week: "Week 2", present: 90, absent: 7, late: 3 },
-              { week: "Week 3", present: 88, absent: 8, late: 4 },
-              { week: "Week 4", present: 91, absent: 6, late: 3 },
-            ]
-          },
-          { 
-            grade: "Grade 2", 
-            data: [
-              { week: "Week 1", present: 88, absent: 8, late: 4 },
-              { week: "Week 2", present: 85, absent: 10, late: 5 },
-              { week: "Week 3", present: 82, absent: 12, late: 6 },
-              { week: "Week 4", present: 86, absent: 9, late: 5 },
-            ]
-          },
-          { 
-            grade: "Grade 3", 
-            data: [
-              { week: "Week 1", present: 85, absent: 10, late: 5 },
-              { week: "Week 2", present: 82, absent: 12, late: 6 },
-              { week: "Week 3", present: 80, absent: 15, late: 5 },
-              { week: "Week 4", present: 83, absent: 12, late: 5 },
-            ]
-          },
-          { 
-            grade: "Grade 4", 
-            data: [
-              { week: "Week 1", present: 90, absent: 7, late: 3 },
-              { week: "Week 2", present: 91, absent: 6, late: 3 },
-              { week: "Week 3", present: 89, absent: 8, late: 3 },
-              { week: "Week 4", present: 92, absent: 5, late: 3 },
-            ]
-          },
-          { 
-            grade: "Grade 5", 
-            data: [
-              { week: "Week 1", present: 93, absent: 5, late: 2 },
-              { week: "Week 2", present: 94, absent: 4, late: 2 },
-              { week: "Week 3", present: 92, absent: 6, late: 2 },
-              { week: "Week 4", present: 95, absent: 3, late: 2 },
-            ]
-          },
-        ];
-        
-        // Mock student attendance data
-        const mockStudentAttendance = [
-          { 
-            student: "Alice Johnson", 
-            gradeId: 1,
-            data: [
-              { day: "Mon", status: "present" },
-              { day: "Tue", status: "present" },
-              { day: "Wed", status: "absent" },
-              { day: "Thu", status: "present" },
-              { day: "Fri", status: "present" },
-              { day: "Mon", status: "present" },
-              { day: "Tue", status: "late" },
-              { day: "Wed", status: "present" },
-              { day: "Thu", status: "present" },
-              { day: "Fri", status: "present" },
-            ],
-            uniformIssues: 1,
-            emailsSent: 2
-          },
-          { 
-            student: "Bob Smith", 
-            gradeId: 1,
-            data: [
-              { day: "Mon", status: "present" },
-              { day: "Tue", status: "present" },
-              { day: "Wed", status: "present" },
-              { day: "Thu", status: "present" },
-              { day: "Fri", status: "absent" },
-              { day: "Mon", status: "present" },
-              { day: "Tue", status: "present" },
-              { day: "Wed", status: "present" },
-              { day: "Thu", status: "late" },
-              { day: "Fri", status: "present" },
-            ],
-            uniformIssues: 3,
-            emailsSent: 4
-          },
-          { 
-            student: "Charlie Brown", 
-            gradeId: 2,
-            data: [
-              { day: "Mon", status: "absent" },
-              { day: "Tue", status: "absent" },
-              { day: "Wed", status: "present" },
-              { day: "Thu", status: "present" },
-              { day: "Fri", status: "present" },
-              { day: "Mon", status: "present" },
-              { day: "Tue", status: "present" },
-              { day: "Wed", status: "present" },
-              { day: "Thu", status: "present" },
-              { day: "Fri", status: "present" },
-            ],
-            uniformIssues: 0,
-            emailsSent: 2
-          },
-          { 
-            student: "Diana Prince", 
-            gradeId: 2,
-            data: [
-              { day: "Mon", status: "present" },
-              { day: "Tue", status: "present" },
-              { day: "Wed", status: "present" },
-              { day: "Thu", status: "late" },
-              { day: "Fri", status: "late" },
-              { day: "Mon", status: "present" },
-              { day: "Tue", status: "present" },
-              { day: "Wed", status: "present" },
-              { day: "Thu", status: "present" },
-              { day: "Fri", status: "present" },
-            ],
-            uniformIssues: 2,
-            emailsSent: 3
-          },
-          { 
-            student: "Edward Cullen", 
-            gradeId: 3,
-            data: [
-              { day: "Mon", status: "present" },
-              { day: "Tue", status: "present" },
-              { day: "Wed", status: "present" },
-              { day: "Thu", status: "present" },
-              { day: "Fri", status: "present" },
-              { day: "Mon", status: "absent" },
-              { day: "Tue", status: "absent" },
-              { day: "Wed", status: "present" },
-              { day: "Thu", status: "present" },
-              { day: "Fri", status: "present" },
-            ],
-            uniformIssues: 1,
-            emailsSent: 1
-          },
-        ];
-        
+        const { data: gradesData, error: gradeErr } = await supabase.from("grades").select("id, name");
+        if (gradeErr) throw gradeErr;
+        const { data: studentsData, error: studentErr } = await supabase.from("students").select("id, name, gradeId");
+        if (studentErr) throw studentErr;
+        const { data: attendanceData, error: attendanceErr } = await supabase.from("attendance").select("studentId, date, status");
+        if (attendanceErr) throw attendanceErr;
+        const { data: uniformData } = await supabase.from("uniformCompliance").select("studentId, compliant");
+        const { data: reportsData } = await supabase.from("reports").select("studentId");
+
+        const gradeAttendance = gradesData.map(g => {
+          const weekMap = {};
+          attendanceData.forEach(a => {
+            const s = studentsData.find(st => st.id === a.studentId);
+            if (s && s.gradeId === g.id) {
+              const week = `Week ${Math.ceil(new Date(a.date).getDate() / 7)}`;
+              if (!weekMap[week]) weekMap[week] = { present: 0, absent: 0, late: 0 };
+              weekMap[week][a.status]++;
+            }
+          });
+          return { grade: g.name, data: Object.entries(weekMap).map(([week, val]) => ({ week, ...val })) };
+        });
+
+        const studentAttendance = studentsData.map(s => {
+          const records = attendanceData.filter(a => a.studentId === s.id);
+          const data = records.map(r => ({ day: new Date(r.date).toLocaleDateString("en-US", { weekday: "short" }), status: r.status }));
+          const uniformIssues = uniformData ? uniformData.filter(u => u.studentId === s.id && !u.compliant).length : 0;
+          const emailsSent = reportsData ? reportsData.filter(r => r.studentId === s.id).length : 0;
+          return { student: s.name, gradeId: s.gradeId, data, uniformIssues, emailsSent };
+        });
+
         setData({
-          grades: mockGrades,
-          students: mockStudents,
-          gradeAttendance: mockGradeAttendance,
-          studentAttendance: mockStudentAttendance,
+          grades: gradesData,
+          students: studentsData,
+          gradeAttendance,
+          studentAttendance,
         });
       } catch (error) {
         console.error("Error fetching data:", error);

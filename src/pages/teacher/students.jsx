@@ -11,6 +11,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Plus, Trash2, ArrowLeft, UserPlus } from "lucide-react";
 import { supabase } from "../../../supabaseClient";
+import { useUser } from "@/context/UserContext";
 
 const TeacherStudents = () => {
   const [searchParams] = useSearchParams();
@@ -29,6 +30,7 @@ const TeacherStudents = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { toast } = useToast();
+  const { user: session } = useUser();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -125,9 +127,14 @@ const TeacherStudents = () => {
 
   const handleDeleteStudent = async () => {
     if (!studentToDelete) return;
-    
 
-    if (deleteConfirmPassword !== "password") {
+    const { data: userData, error: userErr } = await supabase
+      .from('users')
+      .select('password')
+      .eq('id', session.id)
+      .maybeSingle();
+
+    if (userErr || !userData || userData.password !== deleteConfirmPassword) {
       toast({
         title: "Error",
         description: "Incorrect password. Please try again.",
