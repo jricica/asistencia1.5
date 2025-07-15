@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Trash2 } from "lucide-react";
+import { supabase } from "../../../supabaseClient";
 
 const AdminSettings = () => {
   const [settings, setSettings] = useState({
@@ -22,10 +23,18 @@ const AdminSettings = () => {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
+        const { data, error } = await supabase
+          .from('settings')
+          .select('key, value')
+          .in('key', ['attendanceStartTime', 'attendanceEndTime']);
+        if (error) throw error;
 
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Mock settings already set in state
+        const map = {};
+        data.forEach((s) => { map[s.key] = s.value; });
+        setSettings({
+          attendanceStartTime: map.attendanceStartTime || '08:00',
+          attendanceEndTime: map.attendanceEndTime || '09:00',
+        });
       } catch (error) {
         console.error("Error fetching settings:", error);
         toast({
@@ -49,11 +58,15 @@ const AdminSettings = () => {
   const saveSettings = async (e) => {
     e.preventDefault();
     setSaving(true);
-    
-    try {
 
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+    try {
+      const updates = [
+        { key: 'attendanceStartTime', value: settings.attendanceStartTime },
+        { key: 'attendanceEndTime', value: settings.attendanceEndTime },
+      ];
+      const { error } = await supabase.from('settings').upsert(updates);
+      if (error) throw error;
+
       toast({
         title: "Success",
         description: "Settings saved successfully.",
@@ -71,9 +84,10 @@ const AdminSettings = () => {
 
   const deleteAllRecords = async () => {
     try {
+      await supabase.from('attendance').delete().neq('id', 0);
+      await supabase.from('uniformCompliance').delete().neq('id', 0);
+      await supabase.from('reports').delete().neq('id', 0);
 
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
       setIsDeleteDialogOpen(false);
       
       toast({

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/Dashboard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+            message: `${emailForm.subject}\n${emailForm.message}`,
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Mail, Send, Search } from "lucide-react";
+import { supabase } from "../../../supabaseClient";
 
 const TeacherReports = () => {
   const [loading, setLoading] = useState(true);
@@ -33,76 +34,22 @@ const TeacherReports = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const { data: gradesData, error: gradeErr } = await supabase.from("grades").select("id, name");
+        if (gradeErr) throw gradeErr;
+
+        const { data: studentsData, error: studentsErr } = await supabase.from("students").select("id, name, email, gradeId");
+        if (studentsErr) throw studentsErr;
+
+        const { data: reportsData, error: reportsErr } = await supabase.from("reports").select("id, studentId, type, message, sentAt, students(name)").order("sentAt", { ascending: false });
+        if (reportsErr) throw reportsErr;
+
+        const formatted = reportsData.map(r => ({ id: r.id, studentId: r.studentId, studentName: r.students?.name || "Unknown", type: r.type, subject: r.message.split("\n")[0], message: r.message.split("\n").slice(1).join("\n"), sentAt: r.sentAt }));
+
+        setGrades(gradesData);
+        setStudents(studentsData);
+        setReports(formatted);
 
         
-        // Mock grades
-        const mockGrades = [
-          { id: 1, name: "Grade 1" },
-          { id: 2, name: "Grade 2" },
-          { id: 3, name: "Grade 3" },
-        ];
-        
-        // Mock students
-        const mockStudents = [
-          { id: 1, name: "Alice Johnson", email: "alice@example.com", gradeId: 1 },
-          { id: 2, name: "Bob Smith", email: "bob@example.com", gradeId: 1 },
-          { id: 3, name: "Charlie Brown", email: "charlie@example.com", gradeId: 2 },
-          { id: 4, name: "Diana Prince", email: "diana@example.com", gradeId: 2 },
-          { id: 5, name: "Edward Cullen", email: "edward@example.com", gradeId: 3 },
-        ];
-        
-        // Mock reports
-        const mockReports = [
-          { 
-            id: 1, 
-            studentId: 1, 
-            studentName: "Alice Johnson", 
-            type: "uniform", 
-            subject: "Uniform Compliance Notice", 
-            message: "This is a reminder that Alice needs to wear the proper school shoes.", 
-            sentAt: "2023-09-15 09:30" 
-          },
-          { 
-            id: 2, 
-            studentId: 2, 
-            studentName: "Bob Smith", 
-            type: "general", 
-            subject: "Attendance Concern", 
-            message: "Bob has been late to class several times this week.", 
-            sentAt: "2023-09-14 10:15" 
-          },
-          { 
-            id: 3, 
-            studentId: 3, 
-            studentName: "Charlie Brown", 
-            type: "uniform", 
-            subject: "Uniform Compliance Notice", 
-            message: "Charlie was not wearing the proper school sweater today.", 
-            sentAt: "2023-09-13 14:20" 
-          },
-          { 
-            id: 4, 
-            studentId: 1, 
-            studentName: "Alice Johnson", 
-            type: "general", 
-            subject: "Excellent Performance", 
-            message: "Alice has been doing excellent work in class this week.", 
-            sentAt: "2023-09-12 11:45" 
-          },
-          { 
-            id: 5, 
-            studentId: 4, 
-            studentName: "Diana Prince", 
-            type: "uniform", 
-            subject: "Uniform Compliance Notice", 
-            message: "Diana was not wearing the proper school pants today.", 
-            sentAt: "2023-09-11 13:10" 
-          },
-        ];
-        
-        setGrades(mockGrades);
-        setStudents(mockStudents);
-        setReports(mockReports);
       } catch (error) {
         console.error("Error fetching data:", error);
         toast({
@@ -175,27 +122,29 @@ const TeacherReports = () => {
     
     setSending(true);
     
-    try {
-
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Create a new report entry
-    const newReport = {
-      id: reports.length + 1,
-      studentId:
-        selectedStudent !== "default" && selectedStudent !== "all"
-          ? parseInt(selectedStudent)
-          : null,
-      studentName:
-        selectedStudent !== "default" && selectedStudent !== "all"
-          ? students.find((s) => s.id === parseInt(selectedStudent))?.name
-          : `All students in ${grades.find((g) => g.id === parseInt(selectedGrade))?.name}`,
-        type: emailForm.type,
-        subject: emailForm.subject,
-        message: emailForm.message,
-        sentAt: new Date().toISOString().replace("T", " ").substring(0, 16),
-      };
-      
+        const { data: inserted, error } = await supabase
+          .from("reports")
+          .insert({
+            studentId:
+              selectedStudent !== "default" && selectedStudent !== "all"
+                ? parseInt(selectedStudent)
+                : null,
+            type: emailForm.type,
+            message: `${emailForm.subject}\n${emailForm.message}`,
+            teacherId: 1,
+          })
+          .select("id, studentId, type, message, sentAt, students(name)")
+          .single();
+        if (error) throw error;
+        const newReport = {
+          id: inserted.id,
+          studentId: inserted.studentId,
+          studentName: inserted.students?.name || "Unknown",
+          type: inserted.type,
+          subject: emailForm.subject,
+          message: emailForm.message,
+          sentAt: inserted.sentAt,
+        };
       setReports((prev) => [newReport, ...prev]);
       
       setEmailForm({
