@@ -38,7 +38,38 @@ const TeacherGrades = () => {
           .eq('levelId', teacher.levelId);
         if (gradesErr) throw gradesErr;
 
-        setGrades(gradesData);
+        const { data: students } = await supabase
+          .from('students')
+          .select('id, gradeId');
+
+        const { data: attendanceData } = await supabase
+          .from('attendance')
+          .select('studentId, status');
+
+        const { data: uniformData } = await supabase
+          .from('uniformcompliance')
+          .select('studentId, shoes, shirt, pants, sweater, haircut');
+
+        const gradeStats = gradesData.map(g => {
+          const gradeStudents = students.filter(s => s.gradeId === g.id);
+          const studentIds = gradeStudents.map(s => s.id);
+          const studentCount = gradeStudents.length;
+
+          const gradeAttendance = attendanceData.filter(a => studentIds.includes(a.studentId));
+          const present = gradeAttendance.filter(a => a.status === 'present').length;
+          const attendanceRate = gradeAttendance.length
+            ? Math.round((present / gradeAttendance.length) * 100)
+            : 0;
+
+          const gradeUniform = uniformData.filter(u => studentIds.includes(u.studentId));
+          const totalItems = gradeUniform.length * 5;
+          const compliant = gradeUniform.reduce((acc, u) => acc + [u.shoes, u.shirt, u.pants, u.sweater, u.haircut].filter(Boolean).length, 0);
+          const uniformCompliance = totalItems ? Math.round((compliant / totalItems) * 100) : 0;
+
+          return { ...g, studentCount, attendanceRate, uniformCompliance };
+        });
+
+        setGrades(gradeStats);
       } catch (error) {
         console.error("Error fetching teacher data:", error);
         toast({
