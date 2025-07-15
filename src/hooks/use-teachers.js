@@ -7,18 +7,34 @@ export default function useTeachers() {
 
   useEffect(() => {
     const fetchTeachers = async () => {
-      const { data, error } = await supabase
+      const { data: userTeachers, error: userErr } = await supabase
         .from("users")
-        .select("id, name, email, role") // selecciona solo campos necesarios
+        .select("id, name, email, role")
         .eq("role", "teacher");
 
-      if (error) {
-        console.error("Error fetching teacher data:", error);
-        setTeachers([]); // asegúrate de limpiar si hay error
-      } else {
-        setTeachers(data || []);
+      const { data: teacherExtra, error: teacherErr } = await supabase
+        .from("teachers")
+        .select("id, levelId");
+
+      if (userErr || teacherErr) {
+        if (process.env.NODE_ENV === "development") {
+          console.error("Error fetching teacher data:", userErr || teacherErr);
+        }
+        setTeachers([]);
+        setLoading(false);
+        return;
       }
 
+      const extraMap = Object.fromEntries(
+        (teacherExtra || []).map((t) => [t.id, t.levelId])
+      );
+
+      const merged = (userTeachers || []).map((u) => ({
+        ...u,
+        levelId: extraMap[u.id] ?? null,
+      }));
+
+      setTeachers(merged);
       setLoading(false);
     };
 

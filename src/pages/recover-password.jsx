@@ -52,7 +52,10 @@ const RecoverPassword = () => {
                 throw new Error(error?.message || 'Invalid data');
             }
 
-            const { error: resetError } = await supabase.auth.resetPasswordForEmail(formData.email);
+            const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+              formData.email,
+              { redirectTo: `${window.location.origin}/#/reset-password` }
+            );
             if (resetError) throw resetError;
 
             toast({ title: 'Success', description: 'Check your email for the reset link.' });

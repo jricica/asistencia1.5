@@ -22,20 +22,16 @@ const TeacherGrades = () => {
       if (!session) return;
 
       try {
-        const { data: teacher, error: teacherErr } = await supabase
-          .from('users')
+        const { data: teacherInfo } = await supabase
+          .from('teachers')
           .select('levelId')
           .eq('id', session.id)
-          .eq('role', 'teacher')
           .maybeSingle();
-        if (teacherErr || !teacher) throw teacherErr || new Error('Failed');
-
-        setTeacherLevel(teacher.levelId);
 
         const { data: gradesData, error: gradesErr } = await supabase
           .from('grades')
           .select('id, name, levelId, teacherId')
-          .eq('levelId', teacher.levelId);
+          .eq('teacherId', session.id);
         if (gradesErr) throw gradesErr;
 
         const { data: students } = await supabase
@@ -49,6 +45,12 @@ const TeacherGrades = () => {
         const { data: uniformData } = await supabase
           .from('uniformcompliance')
           .select('studentId, shoes, shirt, pants, sweater, haircut');
+
+        if (teacherInfo) {
+          setTeacherLevel(teacherInfo.levelId);
+        } else if (gradesData.length) {
+          setTeacherLevel(gradesData[0].levelId);
+        }
 
         const gradeStats = gradesData.map(g => {
           const gradeStudents = students.filter(s => s.gradeId === g.id);
