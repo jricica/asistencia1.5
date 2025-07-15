@@ -9,11 +9,19 @@ export default function useTeachers() {
     const fetchTeachers = async () => {
       const { data, error } = await supabase
         .from("users")
-        .select("*")
+        .select("id, name, email, role") // selecciona solo campos necesarios
         .eq("role", "teacher");
-      if (!error) setTeachers(data || []);
+
+      if (error) {
+        console.error("Error fetching teacher data:", error);
+        setTeachers([]); // asegúrate de limpiar si hay error
+      } else {
+        setTeachers(data || []);
+      }
+
       setLoading(false);
     };
+
     fetchTeachers();
   }, []);
 
