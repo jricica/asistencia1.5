@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/Dashboard";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,36 +21,15 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Plus, Trash2, UserPlus } from "lucide-react";
 import { supabase } from "../../../supabaseClient";
+import useTeachers from "@/hooks/use-teachers";
 
 const AdminTeachers = () => {
-  const [teachers, setTeachers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { teachers, loading, setTeachers } = useTeachers();
   const [newTeacher, setNewTeacher] = useState({ name: "", email: "", password: "" });
   const [isAddingTeacher, setIsAddingTeacher] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchTeachers = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("teachers")
-          .select("id, name, email, created_at");
-        if (error) throw error;
-        setTeachers(data);
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to load teachers. Please try again.",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTeachers();
-  }, [toast]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
