@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/Dashboard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-            message: `${emailForm.subject}\n${emailForm.message}`,
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -98,53 +97,53 @@ const TeacherReports = () => {
 
   const handleSendEmail = async (e) => {
     e.preventDefault();
-    
-    if (!emailForm.subject || !emailForm.message) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (
-      selectedGrade === "default" &&
-      (selectedStudent === "default" || selectedStudent === "all")
-    ) {
-      toast({
-        title: "Error",
-        description: "Please select a grade or student.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setSending(true);
-    
-        const { data: inserted, error } = await supabase
-          .from("reports")
-          .insert({
-            studentId:
-              selectedStudent !== "default" && selectedStudent !== "all"
-                ? parseInt(selectedStudent)
-                : null,
-            type: emailForm.type,
-            message: `${emailForm.subject}\n${emailForm.message}`,
-            teacherId: 1,
-          })
-          .select("id, studentId, type, message, sentAt, students(name)")
-          .single();
-        if (error) throw error;
-        const newReport = {
-          id: inserted.id,
-          studentId: inserted.studentId,
-          studentName: inserted.students?.name || "Unknown",
-          type: inserted.type,
-          subject: emailForm.subject,
-          message: emailForm.message,
-          sentAt: inserted.sentAt,
-        };
+    try {
+      if (!emailForm.subject || !emailForm.message) {
+        toast({
+          title: "Error",
+          description: "Please fill in all required fields.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      if (
+        selectedGrade === "default" &&
+        (selectedStudent === "default" || selectedStudent === "all")
+      ) {
+        toast({
+          title: "Error",
+          description: "Please select a grade or student.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      setSending(true);
+      
+      const { data: inserted, error } = await supabase
+        .from("reports")
+        .insert({
+          studentId:
+            selectedStudent !== "default" && selectedStudent !== "all"
+              ? parseInt(selectedStudent)
+              : null,
+          type: emailForm.type,
+          message: `${emailForm.subject}\n${emailForm.message}`,
+          teacherId: 1,
+        })
+        .select("id, studentId, type, message, sentAt, students(name)")
+        .single();
+      if (error) throw error;
+      const newReport = {
+        id: inserted.id,
+        studentId: inserted.studentId,
+        studentName: inserted.students?.name || "Unknown",
+        type: inserted.type,
+        subject: emailForm.subject,
+        message: emailForm.message,
+        sentAt: inserted.sentAt,
+      };
       setReports((prev) => [newReport, ...prev]);
       
       setEmailForm({
@@ -169,7 +168,6 @@ const TeacherReports = () => {
       setSending(false);
     }
   };
-
   return (
     <DashboardLayout>
       <div className="space-y-6">
