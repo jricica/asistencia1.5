@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { supabase } from "../../../supabaseClient";
 
 const AdminProjections = () => {
   const [loading, setLoading] = useState(true);
@@ -25,123 +26,70 @@ const AdminProjections = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const { data: levels } = await supabase.from('levels').select('id, name');
+        const { data: teachers } = await supabase
+          .from('users')
+          .select('id, name')
+          .eq('role', 'teacher');
+        const { data: grades } = await supabase
+          .from('grades')
+          .select('id, levelId, teacherId');
+        const { data: students } = await supabase
+          .from('students')
+          .select('id, gradeId');
+        const { data: attendanceData } = await supabase
+          .from('attendance')
+          .select('studentId, date, status');
 
-        
-        // Mock levels
-        const mockLevels = [
-          { id: 1, name: "Elementary" },
-          { id: 2, name: "Middle School" },
-          { id: 3, name: "High School" },
-          { id: 4, name: "Special Education" },
-        ];
-        
-        // Mock teachers
-        const mockTeachers = [
-          { id: 1, name: "John Doe" },
-          { id: 2, name: "Jane Smith" },
-          { id: 3, name: "Robert Johnson" },
-          { id: 4, name: "Emily Davis" },
-          { id: 5, name: "Michael Wilson" },
-        ];
-        
-        // Mock level attendance data
-        const mockLevelAttendance = [
-          { 
-            level: "Elementary", 
-            data: [
-              { month: "Jan", present: 92, absent: 5, late: 3 },
-              { month: "Feb", present: 90, absent: 7, late: 3 },
-              { month: "Mar", present: 88, absent: 8, late: 4 },
-              { month: "Apr", present: 91, absent: 6, late: 3 },
-              { month: "May", present: 93, absent: 4, late: 3 },
-            ]
-          },
-          { 
-            level: "Middle School", 
-            data: [
-              { month: "Jan", present: 88, absent: 8, late: 4 },
-              { month: "Feb", present: 85, absent: 10, late: 5 },
-              { month: "Mar", present: 82, absent: 12, late: 6 },
-              { month: "Apr", present: 86, absent: 9, late: 5 },
-              { month: "May", present: 89, absent: 7, late: 4 },
-            ]
-          },
-          { 
-            level: "High School", 
-            data: [
-              { month: "Jan", present: 85, absent: 10, late: 5 },
-              { month: "Feb", present: 82, absent: 12, late: 6 },
-              { month: "Mar", present: 80, absent: 15, late: 5 },
-              { month: "Apr", present: 83, absent: 12, late: 5 },
-              { month: "May", present: 86, absent: 9, late: 5 },
-            ]
-          },
-          { 
-            level: "Special Education", 
-            data: [
-              { month: "Jan", present: 90, absent: 7, late: 3 },
-              { month: "Feb", present: 91, absent: 6, late: 3 },
-              { month: "Mar", present: 89, absent: 8, late: 3 },
-              { month: "Apr", present: 92, absent: 5, late: 3 },
-              { month: "May", present: 94, absent: 4, late: 2 },
-            ]
-          },
-        ];
-        
-        // Mock teacher compliance data
-        const mockTeacherCompliance = [
-          { 
-            teacher: "John Doe", 
-            data: [
-              { week: "Week 1", compliance: 100 },
-              { week: "Week 2", compliance: 100 },
-              { week: "Week 3", compliance: 95 },
-              { week: "Week 4", compliance: 100 },
-            ]
-          },
-          { 
-            teacher: "Jane Smith", 
-            data: [
-              { week: "Week 1", compliance: 90 },
-              { week: "Week 2", compliance: 95 },
-              { week: "Week 3", compliance: 100 },
-              { week: "Week 4", compliance: 100 },
-            ]
-          },
-          { 
-            teacher: "Robert Johnson", 
-            data: [
-              { week: "Week 1", compliance: 100 },
-              { week: "Week 2", compliance: 100 },
-              { week: "Week 3", compliance: 100 },
-              { week: "Week 4", compliance: 100 },
-            ]
-          },
-          { 
-            teacher: "Emily Davis", 
-            data: [
-              { week: "Week 1", compliance: 85 },
-              { week: "Week 2", compliance: 90 },
-              { week: "Week 3", compliance: 95 },
-              { week: "Week 4", compliance: 100 },
-            ]
-          },
-          { 
-            teacher: "Michael Wilson", 
-            data: [
-              { week: "Week 1", compliance: 95 },
-              { week: "Week 2", compliance: 90 },
-              { week: "Week 3", compliance: 100 },
-              { week: "Week 4", compliance: 95 },
-            ]
-          },
-        ];
-        
+        const studentMap = Object.fromEntries(students.map(s => [s.id, s]));
+        const gradeMap = Object.fromEntries(grades.map(g => [g.id, g]));
+
+        const levelAttendanceMap = {};
+        attendanceData.forEach(a => {
+          const student = studentMap[a.studentId];
+          if (!student) return;
+          const grade = gradeMap[student.gradeId];
+          if (!grade) return;
+          const levelId = grade.levelId;
+          const month = new Date(a.date).toLocaleString('en-US', { month: 'short' });
+          const key = `${levelId}-${month}`;
+          if (!levelAttendanceMap[key]) {
+            levelAttendanceMap[key] = { level: levelId, month, present: 0, absent: 0, late: 0 };
+          }
+          levelAttendanceMap[key][a.status]++;
+        });
+
+        const levelAttendance = levels.map(l => ({
+          level: l.name,
+          data: Object.values(levelAttendanceMap)
+            .filter(v => v.level === l.id)
+            .map(v => ({ month: v.month, present: v.present, absent: v.absent, late: v.late })),
+        }));
+
+        const teacherDayMap = {};
+        const allDays = new Set();
+        attendanceData.forEach(a => {
+          const student = studentMap[a.studentId];
+          if (!student) return;
+          const grade = gradeMap[student.gradeId];
+          if (!grade) return;
+          if (!teacherDayMap[grade.teacherId]) teacherDayMap[grade.teacherId] = {};
+          const week = `Week ${Math.ceil(new Date(a.date).getDate() / 7)}`;
+          if (!teacherDayMap[grade.teacherId][week]) teacherDayMap[grade.teacherId][week] = 0;
+          teacherDayMap[grade.teacherId][week]++;
+          allDays.add(week);
+        });
+
+        const teacherCompliance = teachers.map(t => ({
+          teacher: t.name,
+          data: Object.entries(teacherDayMap[t.id] || {}).map(([week, val]) => ({ week, compliance: val ? 100 : 0 })),
+        }));
+
         setData({
-          levels: mockLevels,
-          teachers: mockTeachers,
-          levelAttendance: mockLevelAttendance,
-          teacherCompliance: mockTeacherCompliance,
+          levels,
+          teachers,
+          levelAttendance,
+          teacherCompliance,
         });
       } catch (error) {
         console.error("Error fetching data:", error);

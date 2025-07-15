@@ -41,61 +41,105 @@ useEffect(() => {
 
     const fetchDashboardData = async () => {
       try {
+        const { data: attendanceData } = await supabase
+          .from('attendance')
+          .select('studentId, date, status');
+        const { data: uniformData } = await supabase
+          .from('uniformcompliance')
+          .select('studentId, date, shoes, shirt, pants, sweater, haircut');
+        const { data: students } = await supabase
+          .from('students')
+          .select('id, gradeId');
+        const { data: grades } = await supabase
+          .from('grades')
+          .select('id, levelId, teacherId');
+        const { data: levels } = await supabase
+          .from('levels')
+          .select('id, name');
+        const { data: teachers } = await supabase
+          .from('users')
+          .select('id, name')
+          .eq('role', 'teacher');
 
-        
-        // Mock attendance by level data
-        const mockAttendanceByLevel = [
-          { name: "Level 1", present: 85, absent: 10, late: 5 },
-          { name: "Level 2", present: 78, absent: 15, late: 7 },
-          { name: "Level 3", present: 90, absent: 7, late: 3 },
-          { name: "Level 4", present: 82, absent: 12, late: 6 }
-        ];
-        
-        // Mock teacher compliance data
-        const mockTeacherCompliance = [
-          { name: "Teacher A", compliance: 95 },
-          { name: "Teacher B", compliance: 88 },
-          { name: "Teacher C", compliance: 100 },
-          { name: "Teacher D", compliance: 92 },
-          { name: "Teacher E", compliance: 85 }
-        ];
-        
-        // Mock recent attendance data
-        const mockRecentAttendance = [
-          { date: "Mon", present: 90, absent: 8, late: 2 },
-          { date: "Tue", present: 85, absent: 10, late: 5 },
-          { date: "Wed", present: 88, absent: 7, late: 5 },
-          { date: "Thu", present: 92, absent: 5, late: 3 },
-          { date: "Fri", present: 80, absent: 15, late: 5 }
-        ];
+        const studentMap = Object.fromEntries(students.map(s => [s.id, s]));
+        const gradeMap = Object.fromEntries(grades.map(g => [g.id, g]));
+        const levelMap = Object.fromEntries(levels.map(l => [l.id, l.name]));
 
-        // Mock uniform compliance data
-        const mockUniformCompliance = [
-          { name: "Shoes", compliant: 92, nonCompliant: 8 },
-          { name: "Shirt", compliant: 95, nonCompliant: 5 },
-          { name: "Pants", compliant: 90, nonCompliant: 10 },
-          { name: "Sweater", compliant: 85, nonCompliant: 15 },
-          { name: "Haircut", compliant: 88, nonCompliant: 12 }
-        ];
+        const attendanceByLevel = {};
+        attendanceData.forEach(a => {
+          const student = studentMap[a.studentId];
+          if (!student) return;
+          const grade = gradeMap[student.gradeId];
+          if (!grade) return;
+          const levelName = levelMap[grade.levelId] || 'Unknown';
+          if (!attendanceByLevel[levelName]) {
+            attendanceByLevel[levelName] = { name: levelName, present: 0, absent: 0, late: 0 };
+          }
+          attendanceByLevel[levelName][a.status]++;
+        });
 
-        // Mock attendance by day of week
-        const mockAttendanceByDay = [
-          { name: "Monday", attendance: 92 },
-          { name: "Tuesday", attendance: 88 },
-          { name: "Wednesday", attendance: 90 },
-          { name: "Thursday", attendance: 94 },
-          { name: "Friday", attendance: 86 }
-        ];
-        
+        const teacherDays = {};
+        const allDays = new Set();
+        attendanceData.forEach(a => {
+          const student = studentMap[a.studentId];
+          if (!student) return;
+          const grade = gradeMap[student.gradeId];
+          if (!grade) return;
+          if (!teacherDays[grade.teacherId]) teacherDays[grade.teacherId] = new Set();
+          teacherDays[grade.teacherId].add(a.date);
+          allDays.add(a.date);
+        });
+        const teacherCompliance = teachers.map(t => ({
+          name: t.name,
+          compliance: allDays.size
+            ? Math.round(((teacherDays[t.id]?.size || 0) / allDays.size) * 100)
+            : 0,
+        }));
+
+        const recentDates = [...allDays].sort().slice(-5);
+        const recentAttendance = recentDates.map(d => {
+          const dayRecords = attendanceData.filter(a => a.date === d);
+          const counts = { present: 0, absent: 0, late: 0 };
+          dayRecords.forEach(r => { counts[r.status]++; });
+          return { date: new Date(d).toLocaleDateString('en-US', { weekday: 'short' }), ...counts };
+        });
+
+        const uniformCompliance = [
+          'shoes',
+          'shirt',
+          'pants',
+          'sweater',
+          'haircut',
+        ].map(item => {
+          let compliant = 0;
+          let nonCompliant = 0;
+          uniformData.forEach(u => {
+            if (u[item]) compliant++; else nonCompliant++;
+          });
+          return { name: item.charAt(0).toUpperCase() + item.slice(1), compliant, nonCompliant };
+        });
+
+        const attendanceByDayMap = {};
+        attendanceData.forEach(a => {
+          const day = new Date(a.date).toLocaleDateString('en-US', { weekday: 'long' });
+          if (!attendanceByDayMap[day]) attendanceByDayMap[day] = { name: day, present: 0, total: 0 };
+          if (a.status === 'present') attendanceByDayMap[day].present++;
+          attendanceByDayMap[day].total++;
+        });
+        const attendanceByDay = Object.values(attendanceByDayMap).map(d => ({
+          name: d.name,
+          attendance: d.total ? Math.round((d.present / d.total) * 100) : 0,
+        }));
+
         setStats({
-          attendanceByLevel: mockAttendanceByLevel,
-          teacherCompliance: mockTeacherCompliance,
-          recentAttendance: mockRecentAttendance,
-          uniformCompliance: mockUniformCompliance,
-          attendanceByDay: mockAttendanceByDay
+          attendanceByLevel: Object.values(attendanceByLevel),
+          teacherCompliance,
+          recentAttendance,
+          uniformCompliance,
+          attendanceByDay,
         });
       } catch (error) {
-        console.error("Error fetching dashboard data:", error);
+        console.error('Error fetching dashboard data:', error);
       } finally {
         setLoading(false);
       }

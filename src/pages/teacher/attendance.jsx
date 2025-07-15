@@ -59,24 +59,35 @@ const TeacherAttendance = () => {
 
         const { data: studentsData, error: studentsErr } = await supabase
           .from('students')
-          .select('id, name, email, gradeId, status, uniform')
+          .select('id, name, email, gradeId')
           .eq('gradeId', gradeId);
         if (studentsErr) throw studentsErr;
+
+        const { data: attToday } = await supabase
+          .from('attendance')
+          .select('studentId, status')
+          .eq('date', attendanceDate);
+
+        const { data: uniformToday } = await supabase
+          .from('uniformcompliance')
+          .select('studentId, shoes, shirt, pants, sweater, haircut')
+          .eq('date', attendanceDate);
 
         setGrade(gradeData);
         setStudents(
           studentsData.map(student => ({
             ...student,
-            status: student.status || "present",
-            uniform: student.uniform || {
-              shoes: false,
-              shirt: false,
-              pants: false,
-              sweater: false,
-              haircut: false,
-            },
+            status: attToday?.find(a => a.studentId === student.id)?.status || 'present',
+            uniform:
+              uniformToday?.find(u => u.studentId === student.id) || {
+                shoes: false,
+                shirt: false,
+                pants: false,
+                sweater: false,
+                haircut: false,
+              },
           }))
-        )
+        );
         
         // Check if attendance has been recorded for today
         setAttendanceRecorded(false); 
@@ -172,12 +183,27 @@ const TeacherAttendance = () => {
         cleanStudents.map((s) => ({
           studentId: s.id,
           status: s.status,
-          gradeId: parseInt(gradeId),
           date: attendanceDate,
         }))
       );
 
     if (error) throw new Error(error.message);
+
+    const { error: uError } = await supabase
+      .from('uniformcompliance')
+      .upsert(
+        cleanStudents.map((s) => ({
+          studentId: s.id,
+          date: attendanceDate,
+          shoes: s.uniform.shoes,
+          shirt: s.uniform.shirt,
+          pants: s.uniform.pants,
+          sweater: s.uniform.sweater,
+          haircut: s.uniform.haircut,
+        }))
+      );
+
+    if (uError) throw new Error(uError.message);
 
     setAttendanceRecorded(true);
 
