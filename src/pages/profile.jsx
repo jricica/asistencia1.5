@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { supabase } from "../../supabaseClient";
 
 const Profile = () => {
   const { user } = useUser();
@@ -54,7 +55,7 @@ const Profile = () => {
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
-    
+
     if (formData.newPassword !== formData.confirmPassword) {
       toast({
         title: "Error",
@@ -65,18 +66,24 @@ const Profile = () => {
     }
     
     setIsChangingPassword(true);
-    
-    try {
 
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+    try {
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: formData.currentPassword,
+      });
+      if (signInError) throw new Error('Current password is incorrect');
+
+      const { error } = await supabase.auth.updateUser({ password: formData.newPassword });
+      if (error) throw error;
+
       setFormData((prev) => ({
         ...prev,
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
       }));
-      
+
       toast({
         title: "Password updated",
         description: "Your password has been changed successfully.",
@@ -84,7 +91,7 @@ const Profile = () => {
     } catch (error) {
       toast({
         title: "Error",
-        description: "There was a problem changing your password. Please try again.",
+        description: error.message || "There was a problem changing your password. Please try again.",
         variant: "destructive",
       });
     } finally {

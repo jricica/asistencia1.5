@@ -17,7 +17,15 @@ const Dashboard = () => {
     teacherCompliance: [],
     recentAttendance: [],
     uniformCompliance: [],
-    attendanceByDay: []
+    attendanceByDay: [],
+    totalStudents: 0,
+    todayAttendance: 0,
+    uniformOverall: 0,
+    averageDailyAttendance: 0,
+    chronicAbsences: 0,
+    perfectAttendance: 0,
+    averageCompliance: 0,
+    teachersBelow: 0,
   });
 
 useEffect(() => {
@@ -120,16 +128,44 @@ useEffect(() => {
         });
 
         const attendanceByDayMap = {};
+        const distribution = { present: 0, absent: 0, late: 0 };
         attendanceData.forEach(a => {
           const day = new Date(a.date).toLocaleDateString('en-US', { weekday: 'long' });
           if (!attendanceByDayMap[day]) attendanceByDayMap[day] = { name: day, present: 0, total: 0 };
           if (a.status === 'present') attendanceByDayMap[day].present++;
           attendanceByDayMap[day].total++;
+          distribution[a.status]++;
         });
         const attendanceByDay = Object.values(attendanceByDayMap).map(d => ({
           name: d.name,
           attendance: d.total ? Math.round((d.present / d.total) * 100) : 0,
         }));
+
+        const totalStudents = students.length;
+        const todayStr = new Date().toISOString().split('T')[0];
+        const todayRecords = attendanceData.filter(a => a.date === todayStr);
+        const todayPresent = todayRecords.filter(r => r.status === 'present').length;
+        const todayAttendance = todayRecords.length ? Math.round((todayPresent / todayRecords.length) * 100) : 0;
+
+        const totalUniformItems = uniformData.length * 5;
+        const compliantCount = uniformData.reduce(
+          (acc, u) => acc + [u.shoes, u.shirt, u.pants, u.sweater, u.haircut].filter(Boolean).length,
+          0
+        );
+        const uniformOverall = totalUniformItems ? Math.round((compliantCount / totalUniformItems) * 100) : 0;
+
+        const totalAttendanceRecords = distribution.present + distribution.absent + distribution.late;
+        const averageDailyAttendance = totalAttendanceRecords ? Math.round((distribution.present / totalAttendanceRecords) * 100) : 0;
+        const chronicAbsences = totalAttendanceRecords ? Math.round((distribution.absent / totalAttendanceRecords) * 100) : 0;
+        const perfectAttendance = 100 - chronicAbsences;
+
+        const averageCompliance = teacherCompliance.length
+          ? Math.round(
+              teacherCompliance.reduce((acc, t) => acc + t.compliance, 0) /
+                teacherCompliance.length
+            )
+          : 0;
+        const teachersBelow = teacherCompliance.filter((t) => t.compliance < 90).length;
 
         setStats({
           attendanceByLevel: Object.values(attendanceByLevel),
@@ -137,6 +173,14 @@ useEffect(() => {
           recentAttendance,
           uniformCompliance,
           attendanceByDay,
+          totalStudents,
+          todayAttendance,
+          uniformOverall,
+          averageDailyAttendance,
+          chronicAbsences,
+          perfectAttendance,
+          averageCompliance,
+          teachersBelow,
         });
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -217,7 +261,7 @@ useEffect(() => {
                       <CardDescription>Across all levels</CardDescription>
                     </CardHeader>
                     <CardContent className="pt-6">
-                      <div className="text-4xl font-bold">450</div>
+                      <div className="text-4xl font-bold">{stats.totalStudents}</div>
                       <div className="flex items-center mt-2">
                         <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
                         <p className="text-xs text-green-500 font-medium">+2.5% from last month</p>
@@ -236,7 +280,7 @@ useEffect(() => {
                       <CardDescription>Overall percentage</CardDescription>
                     </CardHeader>
                     <CardContent className="pt-6">
-                      <div className="text-4xl font-bold">92%</div>
+                      <div className="text-4xl font-bold">{stats.todayAttendance}%</div>
                       <div className="flex items-center mt-2">
                         <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
                         <p className="text-xs text-green-500 font-medium">+1.2% from yesterday</p>
@@ -255,7 +299,7 @@ useEffect(() => {
                       <CardDescription>Overall percentage</CardDescription>
                     </CardHeader>
                     <CardContent className="pt-6">
-                      <div className="text-4xl font-bold">88%</div>
+                      <div className="text-4xl font-bold">{stats.uniformOverall}%</div>
                       <div className="flex items-center mt-2">
                         <TrendingUp className="h-4 w-4 text-red-500 mr-1 rotate-180" />
                         <p className="text-xs text-red-500 font-medium">-0.5% from last week</p>
@@ -434,9 +478,9 @@ useEffect(() => {
                           <PieChart>
                             <Pie
                               data={[
-                                { name: "Present", value: 85 },
-                                { name: "Absent", value: 10 },
-                                { name: "Late", value: 5 }
+                                { name: 'Present', value: stats.averageDailyAttendance },
+                                { name: 'Absent', value: stats.chronicAbsences },
+                                { name: 'Late', value: 100 - stats.averageDailyAttendance - stats.chronicAbsences }
                               ]}
                               cx="50%"
                               cy="50%"
@@ -476,49 +520,54 @@ useEffect(() => {
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
                             <h4 className="text-sm font-medium">Average Daily Attendance</h4>
-                            <span className="text-sm font-bold">87%</span>
+                            <span className="text-sm font-bold">{stats.averageDailyAttendance}%</span>
                           </div>
                           <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                            <div className="h-full bg-primary rounded-full" style={{ width: "87%" }}></div>
+                            <div className="h-full bg-primary rounded-full" style={{ width: `${stats.averageDailyAttendance}%` }}></div>
                           </div>
                         </div>
 
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
                             <h4 className="text-sm font-medium">Chronic Absences</h4>
-                            <span className="text-sm font-bold">8%</span>
+                            <span className="text-sm font-bold">{stats.chronicAbsences}%</span>
                           </div>
                           <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                            <div className="h-full bg-destructive rounded-full" style={{ width: "8%" }}></div>
+                            <div className="h-full bg-destructive rounded-full" style={{ width: `${stats.chronicAbsences}%` }}></div>
                           </div>
                         </div>
 
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
                             <h4 className="text-sm font-medium">Perfect Attendance</h4>
-                            <span className="text-sm font-bold">32%</span>
+                            <span className="text-sm font-bold">{stats.perfectAttendance}%</span>
                           </div>
                           <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                            <div className="h-full bg-green-500 rounded-full" style={{ width: "32%" }}></div>
+                            <div className="h-full bg-green-500 rounded-full" style={{ width: `${stats.perfectAttendance}%` }}></div>
                           </div>
                         </div>
 
                         <div className="pt-4">
                           <h4 className="text-sm font-medium mb-2">Attendance Trends</h4>
                           <div className="grid grid-cols-5 gap-1">
-                            {[92, 88, 90, 94, 86].map((value, i) => (
-                              <div key={i} className="space-y-1">
-                                <div className="h-20 bg-muted rounded-md overflow-hidden">
-                                  <div 
-                                    className="h-full bg-blue-500 rounded-md" 
-                                    style={{ height: `${value}%` }}
-                                  ></div>
+                            {stats.recentAttendance.map((d, i) => {
+                              const percent = d.present + d.absent + d.late
+                                ? Math.round((d.present / (d.present + d.absent + d.late)) * 100)
+                                : 0;
+                              return (
+                                <div key={i} className="space-y-1">
+                                  <div className="h-20 bg-muted rounded-md overflow-hidden">
+                                    <div
+                                      className="h-full bg-blue-500 rounded-md"
+                                      style={{ height: `${percent}%` }}
+                                    ></div>
+                                  </div>
+                                  <div className="text-xs text-center text-muted-foreground">
+                                    {d.date}
+                                  </div>
                                 </div>
-                                <div className="text-xs text-center text-muted-foreground">
-                                  {["M", "T", "W", "T", "F"][i]}
-                                </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         </div>
                       </div>
@@ -573,9 +622,9 @@ useEffect(() => {
 
                 <div className="grid gap-6 md:grid-cols-3">
                   {[
-                    { title: "Average Compliance", value: "92%", description: "Across all teachers", color: "bg-blue-500" },
+                    { title: "Average Compliance", value: `${stats.averageCompliance}%`, description: "Across all teachers", color: "bg-blue-500" },
                     { title: "Compliance Trend", value: "+2.5%", description: "Compared to last month", color: "bg-green-500" },
-                    { title: "Teachers Below Target", value: "2", description: "Below 90% compliance", color: "bg-yellow-500" }
+                    { title: "Teachers Below Target", value: stats.teachersBelow.toString(), description: "Below 90% compliance", color: "bg-yellow-500" }
                   ].map((stat, i) => (
                     <motion.div key={i} variants={item} className="card-hover">
                       <Card className="dashboard-card overflow-hidden">

@@ -40,23 +40,26 @@ const RecoverPassword = () => {
     };
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!validate())
-            return;
+        if (!validate()) return;
         setIsLoading(true);
         try {
-            console.log('Recover password payload:', formData);
             const { data, error } = await supabase
                 .from('users')
-                .select('id')
+                .select('recoveryWord')
                 .eq('email', formData.email)
-                .eq('recoveryWord', formData.recoveryWord)
                 .maybeSingle();
-            if (error || !data)
-                throw new Error(error?.message || "Invalid data");
-            navigate(`/reset-password?email=${encodeURIComponent(formData.email)}`);
+            if (error || !data || data.recoveryWord !== formData.recoveryWord) {
+                throw new Error(error?.message || 'Invalid data');
+            }
+
+            const { error: resetError } = await supabase.auth.resetPasswordForEmail(formData.email);
+            if (resetError) throw resetError;
+
+            toast({ title: 'Success', description: 'Check your email for the reset link.' });
+            navigate('/login');
         }
         catch (err) {
-            toast({ title: "Error", description: err.message, variant: "destructive" });
+            toast({ title: 'Error', description: err.message, variant: 'destructive' });
         }
         finally {
             setIsLoading(false);
