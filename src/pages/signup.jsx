@@ -90,6 +90,19 @@ export default function SignupForm() {
 
       if (error) throw new Error(error.message);
 
+      if (formData.role === 'teacher') {
+        try {
+          await supabase.from('teachers').insert({
+            id: data.id,
+            name: data.name,
+            email: data.email,
+          });
+        } catch (err) {
+          if (process.env.NODE_ENV === 'development') {
+            console.error('Error creating teacher record:', err);
+          }
+        }
+      
       toast({ title: "Account created", description: "Welcome!" });
       setUser(data);
       navigate("/dashboard");

@@ -15,6 +15,7 @@ import SignupForm from "./pages/signup";
 import Logout from "./pages/logout";
 import DashboardRouter from "./pages/dashboard-router";
 import RecoverPassword from "./pages/recover-password";
+import ResetPassword from "./pages/reset-password";
 import Profile from "./pages/profile";
 
 // Admin Pages
@@ -47,6 +48,7 @@ createRoot(document.getElementById("root")).render(
               <Route path="/signup" element={<SignupForm />} />
               <Route path="/logout" element={<Logout />} />
               <Route path="/recover-password" element={<RecoverPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/dashboard" element={<ProtectedRoute Component={DashboardRouter} />} />
               <Route path="/profile" element={<ProtectedRoute Component={Profile} />} />
               <Route path="/admin/teachers" element={<ProtectedRoute Component={AdminTeachers} roles={["admin"]} />} />
