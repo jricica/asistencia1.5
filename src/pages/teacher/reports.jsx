@@ -39,10 +39,21 @@ const TeacherReports = () => {
         const { data: studentsData, error: studentsErr } = await supabase.from("students").select("id, name, email, gradeId");
         if (studentsErr) throw studentsErr;
 
-        const { data: reportsData, error: reportsErr } = await supabase.from("reports").select("id, studentId, type, message, sentAt, students(name)").order("sentAt", { ascending: false });
+        const { data: reportsData, error: reportsErr } = await supabase
+          .from("reports")
+          .select("id, studentId, type, report, date, students(name)")
+          .order("date", { ascending: false });
         if (reportsErr) throw reportsErr;
 
-        const formatted = reportsData.map(r => ({ id: r.id, studentId: r.studentId, studentName: r.students?.name || "Unknown", type: r.type, subject: r.message.split("\n")[0], message: r.message.split("\n").slice(1).join("\n"), sentAt: r.sentAt }));
+        const formatted = reportsData.map((r) => ({
+          id: r.id,
+          studentId: r.studentId,
+          studentName: r.students?.name || "Unknown",
+          type: r.type,
+          subject: r.report.split("\n")[0],
+          message: r.report.split("\n").slice(1).join("\n"),
+          date: r.date,
+        }));
 
         setGrades(gradesData);
         setStudents(studentsData);
@@ -129,10 +140,10 @@ const TeacherReports = () => {
               ? parseInt(selectedStudent)
               : null,
           type: emailForm.type,
-          message: `${emailForm.subject}\n${emailForm.message}`,
-          teacherId: 1,
+          report: `${emailForm.subject}\n${emailForm.message}`,
+          sentBy: "teacher",
         })
-        .select("id, studentId, type, message, sentAt, students(name)")
+        .select("id, studentId, type, report, date, students(name)")
         .single();
       if (error) throw error;
       const newReport = {
@@ -142,7 +153,7 @@ const TeacherReports = () => {
         type: inserted.type,
         subject: emailForm.subject,
         message: emailForm.message,
-        sentAt: inserted.sentAt,
+        date: inserted.date,
       };
       setReports((prev) => [newReport, ...prev]);
       
@@ -395,7 +406,7 @@ const TeacherReports = () => {
                           <TableHead>Student</TableHead>
                           <TableHead>Type</TableHead>
                           <TableHead>Subject</TableHead>
-                          <TableHead>Sent At</TableHead>
+                          <TableHead>Date</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -421,7 +432,7 @@ const TeacherReports = () => {
                                 </span>
                               </TableCell>
                               <TableCell>{report.subject}</TableCell>
-                              <TableCell>{report.sentAt}</TableCell>
+                              <TableCell>{report.date}</TableCell>
                             </TableRow>
                           ))
                         )}

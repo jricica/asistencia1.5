@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,12 +13,6 @@ const ResetPassword = () => {
     const [isLoading, setIsLoading] = useState(false);
     const { toast } = useToast();
     const navigate = useNavigate();
-    const [params] = useSearchParams();
-    const email = params.get("email");
-    if (!email) {
-        navigate("/recover-password", { replace: true });
-        return null;
-    }
     const validate = () => {
         const newErrors = {};
         if (!password)
@@ -34,18 +28,14 @@ const ResetPassword = () => {
             return;
         setIsLoading(true);
         try {
-            const body = { email, password };
-            console.log('Reset password payload:', body);
-            const { error, data } = await supabase
-                .from('users')
-                .update({ password })
-                .eq('email', email)
-                .select('id')
-                .maybeSingle();
-            if (error || !data)
-                throw new Error(error?.message || "Failed");
-            toast({ title: "Password updated" });
-            navigate("/login", { replace: true });
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error('Invalid or expired reset link');
+
+            const { error } = await supabase.auth.updateUser({ password });
+            if (error) throw error;
+
+            toast({ title: 'Password updated' });
+            navigate('/login', { replace: true });
         }
         catch (err) {
             toast({ title: "Error", description: err.message, variant: "destructive" });
