@@ -1,3 +1,5 @@
+-- WARNING: This schema is for context only and is not meant to be run.
+-- Table order and constraints may not be valid for execution.
 
 CREATE TABLE public.attendance (
   id integer NOT NULL DEFAULT nextval('attendance_id_seq'::regclass),
@@ -25,10 +27,10 @@ CREATE TABLE public.levels (
 CREATE TABLE public.reports (
   id integer NOT NULL DEFAULT nextval('reports_id_seq'::regclass),
   studentid integer NOT NULL,
-  date date NOT NULL,
+  type text NOT NULL,
   report text NOT NULL,
-  type text NOT NULL CHECK (type = ANY (ARRAY['asistencia'::text, 'uniforme'::text, 'reconocimiento'::text])),
-  sentBy text NOT NULL,
+  date date DEFAULT CURRENT_DATE,
+  sentby text,
   CONSTRAINT reports_pkey PRIMARY KEY (id),
   CONSTRAINT reports_studentid_fkey FOREIGN KEY (studentid) REFERENCES public.students(id)
 );
@@ -46,13 +48,6 @@ CREATE TABLE public.students (
   createdat timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT students_pkey PRIMARY KEY (id),
   CONSTRAINT students_gradeid_fkey FOREIGN KEY (gradeid) REFERENCES public.grades(id)
-);
-CREATE TABLE public.teachers (
-  id uuid NOT NULL,
-  name text NOT NULL,
-  email text NOT NULL,
-  created_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT teachers_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.teachers_created (
   id uuid NOT NULL,
@@ -81,5 +76,6 @@ CREATE TABLE public.users (
   recoveryWord character varying NOT NULL,
   role character varying NOT NULL CHECK (role::text = ANY (ARRAY['admin'::character varying, 'teacher'::character varying, 'student'::character varying]::text[])),
   createdat timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+  levelid integer,
   CONSTRAINT users_pkey PRIMARY KEY (id)
 );
