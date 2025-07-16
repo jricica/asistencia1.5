@@ -102,7 +102,8 @@ export default function SignupForm() {
             console.error('Error creating teacher record:', err);
           }
         }
-      
+      }
+
       toast({ title: "Account created", description: "Welcome!" });
       setUser(data);
       navigate("/dashboard");
