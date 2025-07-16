@@ -36,14 +36,14 @@ const TeacherGrades = () => {
       if (!session) return;
 
       try {
-        const teacherId = Number(session.id);
-        console.log("Teacher ID:", teacherId); // Depuración
+        const teacherid = Number(session.id);
+        console.log("Teacher ID:", teacherid); // Depuración
 
         // Consultar levelid del usuario (teacher) basado en su role
         const { data: teacherInfo, error: teacherErr } = await supabase
           .from("users")
           .select("levelid")
-          .eq("id", teacherId)
+            .eq("id", teacherid)
           .eq("role", "teacher")
           .maybeSingle();
 
@@ -52,7 +52,7 @@ const TeacherGrades = () => {
         const { data: gradesData, error: gradesErr } = await supabase
           .from("grades")
           .select("id, name, levelid, teacherid")
-          .eq("teacherid", teacherId);
+            .eq("teacherid", teacherid);
 
         console.log("Grades Data:", gradesData); // Depuración
         if (gradesErr) throw gradesErr;
