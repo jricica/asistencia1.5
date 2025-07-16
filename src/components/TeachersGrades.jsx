@@ -1,7 +1,7 @@
 import useTeachersWithGrades from "@/hooks/use-teachers-with-grades";
 
-export default function TeachersGrades() {
-  const { teachers, loading, error } = useTeachersWithGrades();
+export default function TeachersGrades({ levelId }) {
+  const { teachers, loading, error } = useTeachersWithGrades(levelId);
 
   if (loading) return <p>Cargando...</p>;
   if (error) return <p>Error: {error.message}</p>;

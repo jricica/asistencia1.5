@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../supabaseClient";
 
-export default function useTeachersWithGrades() {
+export default function useTeachersWithGrades(levelId) {
   const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -9,11 +9,18 @@ export default function useTeachersWithGrades() {
   useEffect(() => {
     const fetchTeachersWithGrades = async () => {
       setLoading(true);
+      setError(null);
 
-      const { data, error } = await supabase
+      let query = supabase
         .from("grades")
-        .select("id, name, teacher:users(id, name, email)")
-        .not("teacherId", "is", null); // Opcional: solo si teacherId no es null
+        .select("id, name, levelId, teacher:users(id, name, email)")
+        .not("teacherId", "is", null); // Only grades with teacher assigned
+
+      if (levelId) {
+        query = query.eq("levelId", levelId);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         setError(error);
@@ -48,7 +55,7 @@ export default function useTeachersWithGrades() {
     };
 
     fetchTeachersWithGrades();
-  }, []);
+  }, [levelId]);
 
   return { teachers, loading, error };
 }
