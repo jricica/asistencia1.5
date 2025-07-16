@@ -36,44 +36,55 @@ const TeacherGrades = () => {
       if (!session) return;
 
       try {
-        const teacherid = Number(session.id);
-        console.log("Teacher ID:", teacherid); // Depuración
+        const userId = Number(session.id);
+        const role = session.role;
 
-        // Consultar levelid del usuario (teacher) basado en su role
-        const { data: teacherInfo, error: teacherErr } = await supabase
-          .from("users")
-          .select("levelid")
-          .eq("id", teacherid)
-          .eq("role", "teacher")
-          .maybeSingle();
+        let gradesData = [];
 
-        if (teacherErr) throw teacherErr;
+        if (role === "teacher") {
+          const { data: teacherInfo, error: teacherErr } = await supabase
+            .from("users")
+            .select("levelid")
+            .eq("id", userId)
+            .eq("role", "teacher")
+            .maybeSingle();
+          if (teacherErr) throw teacherErr;
 
-        const { data: gradesData, error: gradesErr } = await supabase
-          .from("grades")
-          .select("id, name, levelid, teacherid")
-          .eq("teacherid", teacherid);
+          const { data, error } = await supabase
+            .from("grades")
+            .select("id, name, levelid, teacherid")
+            .eq("teacherid", userId);
+          if (error) throw error;
+          gradesData = data;
 
-        console.log("Grades Data:", gradesData); // Depuración
-        if (gradesErr) throw gradesErr;
+          if (teacherInfo) {
+            setTeacherLevel(teacherInfo.levelid);
+          } else if (gradesData.length) {
+            setTeacherLevel(gradesData[0].levelid);
+          }
+        } else if (role === "admin") {
+          const { data, error } = await supabase
+            .from("grades")
+            .select("id, name, levelid, teacherid");
+          if (error) throw error;
+          gradesData = data;
+          setTeacherLevel("All");
+        }
 
-        const { data: students } = await supabase
+        const { data: students, error: studentsErr } = await supabase
           .from("students")
           .select("id, gradeid");
+        if (studentsErr) throw studentsErr;
 
-        const { data: attendanceData } = await supabase
+        const { data: attendanceData, error: attendanceErr } = await supabase
           .from("attendance")
           .select("studentid, status");
+        if (attendanceErr) throw attendanceErr;
 
-        const { data: uniformData } = await supabase
+        const { data: uniformData, error: uniformErr } = await supabase
           .from("uniformcompliance")
           .select("studentid, shoes, shirt, pants, sweater, haircut");
-
-        if (teacherInfo) {
-          setTeacherLevel(teacherInfo.levelid);
-        } else if (gradesData.length) {
-          setTeacherLevel(gradesData[0].levelid);
-        }
+        if (uniformErr) throw uniformErr;
 
         const gradeStats = gradesData.map((g) => {
           const gradeStudents = students.filter((s) => s.gradeid === g.id);
