@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { supabase } from "../../supabaseClient";
 const RecoverPassword = () => {
-    const [formData, setFormData] = useState({ email: "", recoveryWord: "" });
+    const [formData, setFormData] = useState({ email: "", recoveryWord: "", password: "" });
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
     const { toast } = useToast();
@@ -35,6 +35,12 @@ const RecoverPassword = () => {
         if (!formData.recoveryWord) {
             newErrors.recoveryWord = "Recovery word is required";
         }
+        if (!formData.password) {
+            newErrors.password = "Password is required";
+        }
+        else if (formData.password.length < 8) {
+            newErrors.password = "Password must be at least 8 characters";
+        }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -45,20 +51,20 @@ const RecoverPassword = () => {
         try {
             const { data, error } = await supabase
                 .from('users')
-                .select('recoveryWord')
+                .select('id, recoveryWord')
                 .eq('email', formData.email)
                 .maybeSingle();
             if (error || !data || data.recoveryWord !== formData.recoveryWord) {
                 throw new Error(error?.message || 'Invalid data');
             }
 
-            const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-              formData.email,
-              { redirectTo: `${window.location.origin}/#/reset-password` }
-            );
-            if (resetError) throw resetError;
+            const { error: updateErr } = await supabase
+                .from('users')
+                .update({ password: formData.password })
+                .eq('id', data.id);
+            if (updateErr) throw updateErr;
 
-            toast({ title: 'Success', description: 'Check your email for the reset link.' });
+            toast({ title: 'Password updated' });
             navigate('/login');
         }
         catch (err) {
@@ -72,7 +78,7 @@ const RecoverPassword = () => {
       <Card className="mx-auto w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl">Recover Password</CardTitle>
-          <CardDescription>Enter your email and recovery word.</CardDescription>
+          <CardDescription>Enter your email, recovery word and new password.</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
@@ -85,6 +91,11 @@ const RecoverPassword = () => {
               <Label htmlFor="recoveryWord">Recovery word</Label>
               <Input id="recoveryWord" name="recoveryWord" value={formData.recoveryWord} onChange={handleChange} disabled={isLoading} aria-invalid={!!errors.recoveryWord}/>
               {errors.recoveryWord && <p className="text-sm text-destructive">{errors.recoveryWord}</p>}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">New password</Label>
+              <Input id="password" name="password" type="password" value={formData.password} onChange={handleChange} disabled={isLoading} aria-invalid={!!errors.password}/>
+              {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
