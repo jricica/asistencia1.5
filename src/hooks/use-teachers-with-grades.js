@@ -2,55 +2,53 @@ import { useEffect, useState } from "react";
 import { supabase } from "../../supabaseClient";
 
 export default function useTeachersWithGrades() {
-  const [data, setData] = useState([]);
+  const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await fetch('/api/teachers-with-grades');
-        if (res.ok) {
-          const json = await res.json();
-          setData(json);
-          setError(null);
-          return;
-        }
-      } catch (_) {
-        // Ignored - fallback to Supabase
-      }
+    const fetchTeachersWithGrades = async () => {
+      setLoading(true);
 
-      try {
-        const { data: grades, error: supaErr } = await supabase
-          .from('grades')
-          .select('id, name, teacherId, levelId, teacher:users(id, name, email)');
-        if (supaErr) throw supaErr;
+      const { data, error } = await supabase
+        .from("grades")
+        .select("id, name, teacher:users(id, name, email)")
+        .not("teacherId", "is", null); // Opcional: solo si teacherId no es null
 
-        const grouped = {};
-        for (const g of grades || []) {
-          if (!g.teacher) continue;
-          if (!grouped[g.teacher.id]) {
-            grouped[g.teacher.id] = {
-              id: g.teacher.id,
-              name: g.teacher.name,
-              email: g.teacher.email,
-              grades: [],
-            };
-          }
-          grouped[g.teacher.id].grades.push({ id: g.id, name: g.name, teacherId: g.teacherId, levelId: g.levelId });
-        }
-        setData(Object.values(grouped));
-        setError(null);
-      } catch (err) {
-        setError(err.message || 'Error');
-      } finally {
+      if (error) {
+        setError(error);
         setLoading(false);
+        return;
       }
+
+      // Agrupar por teacher
+      const grouped = {};
+
+      data.forEach((grade) => {
+        const teacher = grade.teacher;
+        if (!teacher) return;
+
+        if (!grouped[teacher.id]) {
+          grouped[teacher.id] = {
+            id: teacher.id,
+            name: teacher.name,
+            email: teacher.email,
+            grades: [],
+          };
+        }
+
+        grouped[teacher.id].grades.push({
+          id: grade.id,
+          name: grade.name,
+        });
+      });
+
+      setTeachers(Object.values(grouped));
+      setLoading(false);
     };
 
-    fetchData();
+    fetchTeachersWithGrades();
   }, []);
 
-  return { data, loading, error };
+  return { teachers, loading, error };
 }
-
