@@ -1,20 +1,20 @@
 
 CREATE TABLE public.attendance (
   id integer NOT NULL DEFAULT nextval('attendance_id_seq'::regclass),
-  studentId integer NOT NULL,
+  studentid integer NOT NULL,
   date date NOT NULL,
   status text NOT NULL CHECK (status = ANY (ARRAY['present'::text, 'absent'::text, 'late'::text])),
   CONSTRAINT attendance_pkey PRIMARY KEY (id),
-  CONSTRAINT attendance_studentId_fkey FOREIGN KEY (studentId) REFERENCES public.students(id)
+  CONSTRAINT attendance_studentid_fkey FOREIGN KEY (studentid) REFERENCES public.students(id)
 );
 CREATE TABLE public.grades (
   id integer NOT NULL DEFAULT nextval('grades_id_seq'::regclass),
   name character varying NOT NULL,
-  levelId integer NOT NULL,
-  teacherId integer,
+  levelid integer NOT NULL,
+  teacherid integer,
   CONSTRAINT grades_pkey PRIMARY KEY (id),
-  CONSTRAINT grades_teacherId_fkey FOREIGN KEY (teacherId) REFERENCES public.users(id),
-  CONSTRAINT grades_levelId_fkey FOREIGN KEY (levelId) REFERENCES public.levels(id)
+  CONSTRAINT grades_teacherid_fkey FOREIGN KEY (teacherid) REFERENCES public.users(id),
+  CONSTRAINT grades_levelid_fkey FOREIGN KEY (levelid) REFERENCES public.levels(id)
 );
 CREATE TABLE public.levels (
   id integer NOT NULL DEFAULT nextval('levels_id_seq'::regclass),
@@ -24,13 +24,13 @@ CREATE TABLE public.levels (
 );
 CREATE TABLE public.reports (
   id integer NOT NULL DEFAULT nextval('reports_id_seq'::regclass),
-  studentId integer NOT NULL,
+  studentid integer NOT NULL,
   date date NOT NULL,
   report text NOT NULL,
   type text NOT NULL CHECK (type = ANY (ARRAY['asistencia'::text, 'uniforme'::text, 'reconocimiento'::text])),
   sentBy text NOT NULL,
   CONSTRAINT reports_pkey PRIMARY KEY (id),
-  CONSTRAINT reports_studentId_fkey FOREIGN KEY (studentId) REFERENCES public.students(id)
+  CONSTRAINT reports_studentid_fkey FOREIGN KEY (studentid) REFERENCES public.students(id)
 );
 CREATE TABLE public.settings (
   id integer NOT NULL DEFAULT nextval('settings_id_seq'::regclass),
@@ -42,10 +42,10 @@ CREATE TABLE public.students (
   id integer NOT NULL DEFAULT nextval('students_id_seq'::regclass),
   name character varying NOT NULL,
   email character varying,
-  gradeId integer NOT NULL,
+  gradeid integer NOT NULL,
   createdat timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT students_pkey PRIMARY KEY (id),
-  CONSTRAINT students_gradeId_fkey FOREIGN KEY (gradeId) REFERENCES public.grades(id)
+  CONSTRAINT students_gradeid_fkey FOREIGN KEY (gradeid) REFERENCES public.grades(id)
 );
 CREATE TABLE public.teachers (
   id uuid NOT NULL,
@@ -63,7 +63,7 @@ CREATE TABLE public.teachers_created (
 );
 CREATE TABLE public.uniformcompliance (
   id integer NOT NULL DEFAULT nextval('uniformcompliance_id_seq'::regclass),
-  studentId integer NOT NULL,
+  studentid integer NOT NULL,
   date date NOT NULL,
   shoes boolean,
   shirt boolean,
@@ -71,7 +71,7 @@ CREATE TABLE public.uniformcompliance (
   sweater boolean,
   haircut boolean,
   CONSTRAINT uniformcompliance_pkey PRIMARY KEY (id),
-  CONSTRAINT uniformcompliance_studentId_fkey FOREIGN KEY (studentId) REFERENCES public.students(id)
+  CONSTRAINT uniformcompliance_studentid_fkey FOREIGN KEY (studentid) REFERENCES public.students(id)
 );
 CREATE TABLE public.users (
   id integer NOT NULL DEFAULT nextval('users_id_seq'::regclass),

@@ -51,16 +51,16 @@ useEffect(() => {
       try {
         const { data: attendanceData } = await supabase
           .from('attendance')
-          .select('studentId, date, status');
+          .select('studentid, date, status');
         const { data: uniformData } = await supabase
           .from('uniformcompliance')
-          .select('studentId, date, shoes, shirt, pants, sweater, haircut');
+          .select('studentid, date, shoes, shirt, pants, sweater, haircut');
         const { data: students } = await supabase
           .from('students')
-          .select('id, gradeId');
+          .select('id, gradeid');
         const { data: grades } = await supabase
           .from('grades')
-          .select('id, levelId, teacherId');
+          .select('id, levelid, teacherid');
         const { data: levels } = await supabase
           .from('levels')
           .select('id, name');
@@ -75,11 +75,11 @@ useEffect(() => {
 
         const attendanceByLevel = {};
         attendanceData.forEach(a => {
-          const student = studentMap[a.studentId];
+          const student = studentMap[a.studentid];
           if (!student) return;
-          const grade = gradeMap[student.gradeId];
+          const grade = gradeMap[student.gradeid];
           if (!grade) return;
-          const levelName = levelMap[grade.levelId] || 'Unknown';
+          const levelName = levelMap[grade.levelid] || 'Unknown';
           if (!attendanceByLevel[levelName]) {
             attendanceByLevel[levelName] = { name: levelName, present: 0, absent: 0, late: 0 };
           }
@@ -89,12 +89,12 @@ useEffect(() => {
         const teacherDays = {};
         const allDays = new Set();
         attendanceData.forEach(a => {
-          const student = studentMap[a.studentId];
+          const student = studentMap[a.studentid];
           if (!student) return;
-          const grade = gradeMap[student.gradeId];
+          const grade = gradeMap[student.gradeid];
           if (!grade) return;
-          if (!teacherDays[grade.teacherId]) teacherDays[grade.teacherId] = new Set();
-          teacherDays[grade.teacherId].add(a.date);
+          if (!teacherDays[grade.teacherid]) teacherDays[grade.teacherid] = new Set();
+          teacherDays[grade.teacherid].add(a.date);
           allDays.add(a.date);
         });
         const teacherCompliance = teachers.map(t => ({

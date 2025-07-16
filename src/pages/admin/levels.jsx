@@ -27,8 +27,8 @@ const AdminLevels = () => {
   
   const [newGrade, setNewGrade] = useState({
     name: "",
-    levelId: "default",
-    teacherId: "unassigned",
+    levelid: "default",
+    teacherid: "unassigned",
   });
   
   const [isAddingLevel, setIsAddingLevel] = useState(false);
@@ -49,7 +49,7 @@ const AdminLevels = () => {
 
         const { data: gradesData, error: gradeErr } = await supabase
           .from('grades')
-          .select('id, name, levelId, teacherId');
+          .select('id, name, levelid, teacherid');
         if (gradeErr) throw gradeErr;
         setGrades(gradesData);
 
@@ -141,7 +141,7 @@ const AdminLevels = () => {
   const handleAddGrade = async (e) => {
     e.preventDefault();
     
-    if (!newGrade.name || newGrade.levelId === "default") {
+    if (!newGrade.name || newGrade.levelid === "default") {
       toast({
         title: "Error",
         description: "Please fill in all required fields.",
@@ -155,17 +155,17 @@ const AdminLevels = () => {
     try {
       const payload = {
         name: newGrade.name,
-        levelId: parseInt(newGrade.levelId),
-        teacherId:
-          newGrade.teacherId && newGrade.teacherId !== "unassigned"
-            ? parseInt(newGrade.teacherId)
+        levelid: parseInt(newGrade.levelid),
+        teacherid:
+          newGrade.teacherid && newGrade.teacherid !== "unassigned"
+            ? parseInt(newGrade.teacherid)
             : null,
       };
 
       const { data: created, error } = await supabase
         .from('grades')
         .insert(payload)
-        .select('id, name, levelId, teacherId')
+        .select('id, name, levelid, teacherid')
         .single();
 
       if (error) throw new Error(error.message);
@@ -174,8 +174,8 @@ const AdminLevels = () => {
       
       setNewGrade({
         name: "",
-        levelId: "default",
-        teacherId: "unassigned",
+        levelid: "default",
+        teacherid: "unassigned",
       });
       
       setIsGradeDialogOpen(false);
@@ -195,10 +195,10 @@ const AdminLevels = () => {
     }
   };
 
-  const handleDeleteLevel = async (levelId) => {
+  const handleDeleteLevel = async (levelid) => {
     try {
 
-      const associatedGrades = grades.filter((grade) => grade.levelId === levelId);
+      const associatedGrades = grades.filter((grade) => grade.levelid === levelid);
       
       if (associatedGrades.length > 0) {
         toast({
@@ -213,11 +213,11 @@ const AdminLevels = () => {
       const { error } = await supabase
         .from('levels')
         .delete()
-        .eq('id', levelId);
+        .eq('id', levelid);
 
       if (error) throw new Error(error.message);
 
-      setLevels((prev) => prev.filter((level) => level.id !== levelId));
+      setLevels((prev) => prev.filter((level) => level.id !== levelid));
       
       toast({
         title: "Success",
@@ -256,14 +256,14 @@ const AdminLevels = () => {
     }
   };
 
-  const getLevelName = (levelId) => {
-    const level = levels.find((level) => level.id === levelId);
+  const getLevelName = (levelid) => {
+    const level = levels.find((level) => level.id === levelid);
     return level ? level.name : "Unknown";
   };
 
-  const getTeacherName = (teacherId) => {
-    if (!teacherId) return "Not Assigned";
-    const teacher = teachers.find((teacher) => teacher.id === teacherId);
+  const getTeacherName = (teacherid) => {
+    if (!teacherid) return "Not Assigned";
+    const teacher = teachers.find((teacher) => teacher.id === teacherid);
     return teacher ? teacher.name : "Unknown";
   };
 
@@ -378,10 +378,10 @@ const AdminLevels = () => {
                       </div>
                       
                       <div className="space-y-2">
-                        <Label htmlFor="levelId">Level</Label>
+                        <Label htmlFor="levelid">Level</Label>
                         <Select
-                          value={newGrade.levelId}
-                          onValueChange={(value) => handleSelectChange("levelId", value)}
+                          value={newGrade.levelid}
+                          onValueChange={(value) => handleSelectChange("levelid", value)}
                           disabled={isAddingGrade}
                           required
                         >
@@ -402,10 +402,10 @@ const AdminLevels = () => {
                       </div>
                       
                       <div className="space-y-2">
-                        <Label htmlFor="teacherId">Assigned Teacher (Optional)</Label>
+                        <Label htmlFor="teacherid">Assigned Teacher (Optional)</Label>
                         <Select
-                          value={newGrade.teacherId}
-                          onValueChange={(value) => handleSelectChange("teacherId", value)}
+                          value={newGrade.teacherid}
+                          onValueChange={(value) => handleSelectChange("teacherid", value)}
                           disabled={isAddingGrade}
                         >
                           <SelectTrigger>
@@ -480,7 +480,7 @@ const AdminLevels = () => {
                         </TableRow>
                       ) : (
                         levels.map((level) => {
-                          const levelGrades = grades.filter((grade) => grade.levelId === level.id);
+                          const levelGrades = grades.filter((grade) => grade.levelid === level.id);
                           
                           return (
                             <TableRow key={level.id}>
@@ -564,8 +564,8 @@ const AdminLevels = () => {
                         grades.map((grade) => (
                           <TableRow key={grade.id}>
                             <TableCell className="font-medium">{grade.name}</TableCell>
-                            <TableCell>{getLevelName(grade.levelId)}</TableCell>
-                            <TableCell>{getTeacherName(grade.teacherId)}</TableCell>
+                            <TableCell>{getLevelName(grade.levelid)}</TableCell>
+                            <TableCell>{getTeacherName(grade.teacherid)}</TableCell>
                             <TableCell className="text-right">
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>

@@ -23,7 +23,7 @@ import {
 
 const TeacherAttendance = () => {
   const [searchParams] = useSearchParams();
-  const gradeId = searchParams.get("gradeId");
+  const gradeid = searchParams.get("gradeid");
   
   const [students, setStudents] = useState([]);
   const [grade, setGrade] = useState(null);
@@ -47,39 +47,39 @@ const TeacherAttendance = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!gradeId) return;
+      if (!gradeid) return;
       
       try {
         const { data: gradeData, error: gradeErr } = await supabase
           .from('grades')
-          .select('id, name, levelId')
-          .eq('id', gradeId)
+          .select('id, name, levelid')
+          .eq('id', gradeid)
           .maybeSingle();
         if (gradeErr || !gradeData) throw gradeErr || new Error('Failed');
 
         const { data: studentsData, error: studentsErr } = await supabase
           .from('students')
-          .select('id, name, email, gradeId')
-          .eq('gradeId', gradeId);
+          .select('id, name, email, gradeid')
+          .eq('gradeid', gradeid);
         if (studentsErr) throw studentsErr;
 
         const { data: attToday } = await supabase
           .from('attendance')
-          .select('studentId, status')
+          .select('studentid, status')
           .eq('date', attendanceDate);
 
         const { data: uniformToday } = await supabase
           .from('uniformcompliance')
-          .select('studentId, shoes, shirt, pants, sweater, haircut')
+          .select('studentid, shoes, shirt, pants, sweater, haircut')
           .eq('date', attendanceDate);
 
         setGrade(gradeData);
         setStudents(
           studentsData.map(student => ({
             ...student,
-            status: attToday?.find(a => a.studentId === student.id)?.status || 'present',
+            status: attToday?.find(a => a.studentid === student.id)?.status || 'present',
             uniform:
-              uniformToday?.find(u => u.studentId === student.id) || {
+              uniformToday?.find(u => u.studentid === student.id) || {
                 shoes: false,
                 shirt: false,
                 pants: false,
@@ -104,20 +104,20 @@ const TeacherAttendance = () => {
     };
 
     fetchData();
-  }, [gradeId, toast]);
+  }, [gradeid, toast]);
 
-  const handleStatusChange = (studentId, status) => {
+  const handleStatusChange = (studentid, status) => {
     setStudents((prev) =>
       prev.map((student) =>
-        student.id === studentId ? { ...student, status } : student
+        student.id === studentid ? { ...student, status } : student
       )
     );
   };
 
-  const handleUniformChange = (studentId, item, checked) => {
+  const handleUniformChange = (studentid, item, checked) => {
     setStudents((prev) =>
       prev.map((student) =>
-        student.id === studentId
+        student.id === studentid
           ? {
               ...student,
               uniform: {
@@ -170,7 +170,7 @@ const TeacherAttendance = () => {
     }));
 
     const body = {
-      gradeId: parseInt(gradeId),
+      gradeid: parseInt(gradeid),
       date: attendanceDate,
       students: cleanStudents,
     };
@@ -181,7 +181,7 @@ const TeacherAttendance = () => {
       .from('attendance')
       .upsert(
         cleanStudents.map((s) => ({
-          studentId: s.id,
+          studentid: s.id,
           status: s.status,
           date: attendanceDate,
         }))
@@ -193,7 +193,7 @@ const TeacherAttendance = () => {
       .from('uniformcompliance')
       .upsert(
         cleanStudents.map((s) => ({
-          studentId: s.id,
+          studentid: s.id,
           date: attendanceDate,
           shoes: s.uniform.shoes,
           shirt: s.uniform.shirt,
@@ -231,7 +231,7 @@ const TeacherAttendance = () => {
   const sendEmail = async (type) => {
     try {
       const body = {
-        studentId: selectedStudent.id,
+        studentid: selectedStudent.id,
         type,
       };
       console.log('Email payload:', body);
@@ -312,7 +312,7 @@ const TeacherAttendance = () => {
     show: { opacity: 1, y: 0 }
   };
 
-  if (!gradeId) {
+  if (!gradeid) {
     return (
       <DashboardLayout>
         <div className="space-y-6">

@@ -14,7 +14,7 @@ export default function useTeachers() {
 
       const { data: teacherExtra, error: teacherErr } = await supabase
         .from("teachers")
-        .select("id, levelId");
+        .select("id, levelid");
 
       if (userErr || teacherErr) {
         if (process.env.NODE_ENV === "development") {
@@ -26,12 +26,12 @@ export default function useTeachers() {
       }
 
       const extraMap = Object.fromEntries(
-        (teacherExtra || []).map((t) => [t.id, t.levelId])
+        (teacherExtra || []).map((t) => [t.id, t.levelid])
       );
 
       const merged = (userTeachers || []).map((u) => ({
         ...u,
-        levelId: extraMap[u.id] ?? null,
+        levelid: extraMap[u.id] ?? null,
       }));
 
       setTeachers(merged);
