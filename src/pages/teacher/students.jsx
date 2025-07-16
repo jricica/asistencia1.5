@@ -15,7 +15,7 @@ import { useUser } from "@/context/UserContext";
 
 const TeacherStudents = () => {
   const [searchParams] = useSearchParams();
-  const gradeId = searchParams.get("gradeId");
+  const gradeid = searchParams.get("gradeid");
   
   const [students, setStudents] = useState([]);
   const [grade, setGrade] = useState(null);
@@ -34,20 +34,20 @@ const TeacherStudents = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!gradeId) return;
+      if (!gradeid) return;
 
       try {
         const { data: gradeData, error: gradeErr } = await supabase
           .from('grades')
-          .select('id, name, levelId, teacherId')
-          .eq('id', gradeId)
+          .select('id, name, levelid, teacherid')
+          .eq('id', gradeid)
           .maybeSingle();
         if (gradeErr || !gradeData) throw gradeErr || new Error('Failed');
 
         const { data: studentsData, error: studentsErr } = await supabase
           .from('students')
-          .select('id, name, email, gradeId')
-          .eq('gradeId', gradeId);
+          .select('id, name, email, gradeid')
+          .eq('gradeid', gradeid);
         if (studentsErr) throw studentsErr;
 
         setGrade(gradeData);
@@ -65,7 +65,7 @@ const TeacherStudents = () => {
     };
 
     fetchData();
-  }, [gradeId, toast]);
+  }, [gradeid, toast]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -90,13 +90,13 @@ const TeacherStudents = () => {
       const body = {
         name: newStudent.name,
         email: newStudent.email,
-        gradeId: parseInt(gradeId),
+        gradeid: parseInt(gradeid),
       };
       console.log('New student data:', body);
       const { data: created, error } = await supabase
         .from('students')
         .insert(body)
-        .select('id, name, email, gradeId')
+        .select('id, name, email, gradeid')
         .single();
 
       if (error) throw new Error(error.message);
@@ -178,7 +178,7 @@ const TeacherStudents = () => {
     setIsDeleteDialogOpen(true);
   };
 
-  if (!gradeId) {
+  if (!gradeid) {
     return (
       <DashboardLayout>
         <div className="space-y-6">

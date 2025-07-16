@@ -48,13 +48,13 @@ async function seedData() {
       .insert([
         {
           name: 'Segundo Básico',
-          levelId: levels[0].id,
-          teacherId: teachers[0].id,
+          levelid: levels[0].id,
+          teacherid: teachers[0].id,
         },
         {
           name: 'Cuarto Diversificado',
-          levelId: levels[1].id,
-          teacherId: teachers[1].id,
+          levelid: levels[1].id,
+          teacherid: teachers[1].id,
         },
       ])
       .select();
@@ -62,12 +62,12 @@ async function seedData() {
 
     // 4. Crear estudiantes
     const studentsData = [
-      { name: 'Valeria Gómez', email: 'valeria@student.com', gradeId: grades[0].id },
-      { name: 'David Ramírez', email: 'david@student.com', gradeId: grades[0].id },
-      { name: 'Isabel Cano', email: 'isabel@student.com', gradeId: grades[0].id },
-      { name: 'Diego Castro', email: 'diego@student.com', gradeId: grades[1].id },
-      { name: 'Lucía Hernández', email: 'lucia@student.com', gradeId: grades[1].id },
-      { name: 'Tomás Morales', email: 'tomas@student.com', gradeId: grades[1].id },
+      { name: 'Valeria Gómez', email: 'valeria@student.com', gradeid: grades[0].id },
+      { name: 'David Ramírez', email: 'david@student.com', gradeid: grades[0].id },
+      { name: 'Isabel Cano', email: 'isabel@student.com', gradeid: grades[0].id },
+      { name: 'Diego Castro', email: 'diego@student.com', gradeid: grades[1].id },
+      { name: 'Lucía Hernández', email: 'lucia@student.com', gradeid: grades[1].id },
+      { name: 'Tomás Morales', email: 'tomas@student.com', gradeid: grades[1].id },
     ];
 
     const { data: students, error: studentError } = await supabase
@@ -92,14 +92,14 @@ async function seedData() {
       for (const date of dates) {
         // Asistencia
         attendance.push({
-          studentId: student.id,
+          studentid: student.id,
           date,
           status: ['present', 'absent', 'late'][Math.floor(Math.random() * 3)],
         });
 
         // Uniforme
         uniform.push({
-          studentId: student.id,
+          studentid: student.id,
           date,
           shoes: Math.random() > 0.3,
           shirt: Math.random() > 0.2,
@@ -110,7 +110,7 @@ async function seedData() {
 
         // Reporte
         reports.push({
-          studentId: student.id,
+          studentid: student.id,
           date,
           report: `El alumno ${student.name} presentó ${['falta de uniforme', 'llegada tarde', 'comportamiento excelente'][Math.floor(Math.random() * 3)]}.`,
           type: ['uniforme', 'asistencia', 'reconocimiento'][Math.floor(Math.random() * 3)],

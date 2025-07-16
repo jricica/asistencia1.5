@@ -33,28 +33,28 @@ const AdminProjections = () => {
           .eq('role', 'teacher');
         const { data: grades } = await supabase
           .from('grades')
-          .select('id, levelId, teacherId');
+          .select('id, levelid, teacherid');
         const { data: students } = await supabase
           .from('students')
-          .select('id, gradeId');
+          .select('id, gradeid');
         const { data: attendanceData } = await supabase
           .from('attendance')
-          .select('studentId, date, status');
+          .select('studentid, date, status');
 
         const studentMap = Object.fromEntries(students.map(s => [s.id, s]));
         const gradeMap = Object.fromEntries(grades.map(g => [g.id, g]));
 
         const levelAttendanceMap = {};
         attendanceData.forEach(a => {
-          const student = studentMap[a.studentId];
+          const student = studentMap[a.studentid];
           if (!student) return;
-          const grade = gradeMap[student.gradeId];
+          const grade = gradeMap[student.gradeid];
           if (!grade) return;
-          const levelId = grade.levelId;
+          const levelid = grade.levelid;
           const month = new Date(a.date).toLocaleString('en-US', { month: 'short' });
-          const key = `${levelId}-${month}`;
+          const key = `${levelid}-${month}`;
           if (!levelAttendanceMap[key]) {
-            levelAttendanceMap[key] = { level: levelId, month, present: 0, absent: 0, late: 0 };
+            levelAttendanceMap[key] = { level: levelid, month, present: 0, absent: 0, late: 0 };
           }
           levelAttendanceMap[key][a.status]++;
         });
@@ -69,14 +69,14 @@ const AdminProjections = () => {
         const teacherDayMap = {};
         const allDays = new Set();
         attendanceData.forEach(a => {
-          const student = studentMap[a.studentId];
+          const student = studentMap[a.studentid];
           if (!student) return;
-          const grade = gradeMap[student.gradeId];
+          const grade = gradeMap[student.gradeid];
           if (!grade) return;
-          if (!teacherDayMap[grade.teacherId]) teacherDayMap[grade.teacherId] = {};
+          if (!teacherDayMap[grade.teacherid]) teacherDayMap[grade.teacherid] = {};
           const week = `Week ${Math.ceil(new Date(a.date).getDate() / 7)}`;
-          if (!teacherDayMap[grade.teacherId][week]) teacherDayMap[grade.teacherId][week] = 0;
-          teacherDayMap[grade.teacherId][week]++;
+          if (!teacherDayMap[grade.teacherid][week]) teacherDayMap[grade.teacherid][week] = 0;
+          teacherDayMap[grade.teacherid][week]++;
           allDays.add(week);
         });
 

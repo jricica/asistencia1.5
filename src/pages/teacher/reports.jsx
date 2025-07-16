@@ -37,12 +37,12 @@ const TeacherReports = () => {
         const { data: gradesData, error: gradeErr } = await supabase.from("grades").select("id, name");
         if (gradeErr) throw gradeErr;
 
-        const { data: studentsData, error: studentsErr } = await supabase.from("students").select("id, name, email, gradeId");
+        const { data: studentsData, error: studentsErr } = await supabase.from("students").select("id, name, email, gradeid");
         if (studentsErr) throw studentsErr;
 
         const { data: reportsData, error: reportsErr } = await supabase
   .from("reports")
-  .select("id, studentId, type, report, date, students(name)")
+  .select("id, studentid, type, report, date, students(name)")
 
 
 
@@ -51,7 +51,7 @@ const TeacherReports = () => {
 
         const formatted = reportsData.map((r) => ({
           id: r.id,
-          studentId: r.studentId,
+          studentid: r.studentid,
           studentName: inserted.students?.name || "Unknown",
           type: r.type,
           subject: r.report.split("\n")[0],
@@ -90,7 +90,7 @@ const TeacherReports = () => {
 
   const getFilteredStudents = () => {
     if (selectedGrade === "default") return [];
-    return students.filter((student) => student.gradeId === parseInt(selectedGrade));
+    return students.filter((student) => student.gradeid === parseInt(selectedGrade));
   };
 
   const getFilteredReports = () => {
@@ -103,7 +103,7 @@ const TeacherReports = () => {
 
     const matchesStudent =
       selectedStudent !== "default" && selectedStudent !== "all"
-        ? report.studentId === parseInt(selectedStudent)
+        ? report.studentid === parseInt(selectedStudent)
         : true;
 
       return matchesSearch && matchesStudent;
@@ -136,9 +136,9 @@ const TeacherReports = () => {
       
       setSending(true);
       
- const studentIdValue = 
-  selectedStudent !== "default" && selectedStudent !== "all" 
-    ? Number(selectedStudent) 
+ const studentIdValue =
+  selectedStudent !== "default" && selectedStudent !== "all"
+    ? Number(selectedStudent)
     : null;
 
 if (selectedStudent !== "default" && selectedStudent !== "all" && isNaN(studentIdValue)) {
@@ -148,20 +148,20 @@ if (selectedStudent !== "default" && selectedStudent !== "all" && isNaN(studentI
 const { data: inserted, error } = await supabase
   .from("reports")
   .insert({
-    studentId: studentIdValue,
+    studentid: studentIdValue,
     type: emailForm.type,
     report: `${emailForm.subject}\n${emailForm.message}`,
     sentBy: "teacher",
   })
 
-        .select("id, studentId, type, report, date, students(name)")
+        .select("id, studentid, type, report, date, students(name)")
 
 
         .single();
       if (error) throw error;
       const newReport = {
         id: inserted.id,
-        studentId: inserted.studentId,
+        studentid: inserted.studentid,
         studentName: inserted.students?.name || "Unknown",
         type: inserted.type,
         subject: emailForm.subject,

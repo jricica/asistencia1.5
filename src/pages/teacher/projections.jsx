@@ -30,18 +30,18 @@ const TeacherProjections = () => {
         
         const { data: gradesData, error: gradeErr } = await supabase.from("grades").select("id, name");
         if (gradeErr) throw gradeErr;
-        const { data: studentsData, error: studentErr } = await supabase.from("students").select("id, name, gradeId");
+        const { data: studentsData, error: studentErr } = await supabase.from("students").select("id, name, gradeid");
         if (studentErr) throw studentErr;
-        const { data: attendanceData, error: attendanceErr } = await supabase.from("attendance").select("studentId, date, status");
+        const { data: attendanceData, error: attendanceErr } = await supabase.from("attendance").select("studentid, date, status");
         if (attendanceErr) throw attendanceErr;
-        const { data: uniformData } = await supabase.from("uniformCompliance").select("studentId, compliant");
-        const { data: reportsData } = await supabase.from("reports").select("studentId");
+        const { data: uniformData } = await supabase.from("uniformCompliance").select("studentid, compliant");
+        const { data: reportsData } = await supabase.from("reports").select("studentid");
 
         const gradeAttendance = gradesData.map(g => {
           const weekMap = {};
           attendanceData.forEach(a => {
-            const s = studentsData.find(st => st.id === a.studentId);
-            if (s && s.gradeId === g.id) {
+            const s = studentsData.find(st => st.id === a.studentid);
+            if (s && s.gradeid === g.id) {
               const week = `Week ${Math.ceil(new Date(a.date).getDate() / 7)}`;
               if (!weekMap[week]) weekMap[week] = { present: 0, absent: 0, late: 0 };
               weekMap[week][a.status]++;
@@ -51,11 +51,11 @@ const TeacherProjections = () => {
         });
 
         const studentAttendance = studentsData.map(s => {
-          const records = attendanceData.filter(a => a.studentId === s.id);
+          const records = attendanceData.filter(a => a.studentid === s.id);
           const data = records.map(r => ({ day: new Date(r.date).toLocaleDateString("en-US", { weekday: "short" }), status: r.status }));
-          const uniformIssues = uniformData ? uniformData.filter(u => u.studentId === s.id && !u.compliant).length : 0;
-          const emailsSent = reportsData ? reportsData.filter(r => r.studentId === s.id).length : 0;
-          return { student: s.name, gradeId: s.gradeId, data, uniformIssues, emailsSent };
+          const uniformIssues = uniformData ? uniformData.filter(u => u.studentid === s.id && !u.compliant).length : 0;
+          const emailsSent = reportsData ? reportsData.filter(r => r.studentid === s.id).length : 0;
+          return { student: s.name, gradeid: s.gradeid, data, uniformIssues, emailsSent };
         });
 
         setData({
@@ -153,8 +153,8 @@ const TeacherProjections = () => {
     if (selectedGrade === "all") {
       return data.studentAttendance;
     } else {
-      const gradeId = data.grades.find(grade => grade.name === selectedGrade)?.id;
-      return data.studentAttendance.filter(student => student.gradeId === gradeId);
+      const gradeid = data.grades.find(grade => grade.name === selectedGrade)?.id;
+      return data.studentAttendance.filter(student => student.gradeid === gradeid);
     }
   };
 

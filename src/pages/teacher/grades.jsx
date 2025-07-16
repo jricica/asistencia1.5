@@ -39,10 +39,10 @@ const TeacherGrades = () => {
         const teacherId = Number(session.id);
         console.log("Teacher ID:", teacherId); // Depuración
 
-        // Consultar levelId del usuario (teacher) basado en su role
+        // Consultar levelid del usuario (teacher) basado en su role
         const { data: teacherInfo, error: teacherErr } = await supabase
           .from("users")
-          .select("levelId")
+          .select("levelid")
           .eq("id", teacherId)
           .eq("role", "teacher")
           .maybeSingle();
@@ -51,37 +51,37 @@ const TeacherGrades = () => {
 
         const { data: gradesData, error: gradesErr } = await supabase
           .from("grades")
-          .select("id, name, levelId, teacherId")
-          .eq("teacherId", teacherId);
+          .select("id, name, levelid, teacherid")
+          .eq("teacherid", teacherId);
 
         console.log("Grades Data:", gradesData); // Depuración
         if (gradesErr) throw gradesErr;
 
         const { data: students } = await supabase
           .from("students")
-          .select("id, gradeId");
+          .select("id, gradeid");
 
         const { data: attendanceData } = await supabase
           .from("attendance")
-          .select("studentId, status");
+          .select("studentid, status");
 
         const { data: uniformData } = await supabase
           .from("uniformcompliance")
-          .select("studentId, shoes, shirt, pants, sweater, haircut");
+          .select("studentid, shoes, shirt, pants, sweater, haircut");
 
         if (teacherInfo) {
-          setTeacherLevel(teacherInfo.levelId);
+          setTeacherLevel(teacherInfo.levelid);
         } else if (gradesData.length) {
-          setTeacherLevel(gradesData[0].levelId);
+          setTeacherLevel(gradesData[0].levelid);
         }
 
         const gradeStats = gradesData.map((g) => {
-          const gradeStudents = students.filter((s) => s.gradeId === g.id);
+          const gradeStudents = students.filter((s) => s.gradeid === g.id);
           const studentIds = gradeStudents.map((s) => s.id);
           const studentCount = gradeStudents.length;
 
           const gradeAttendance = attendanceData.filter((a) =>
-            studentIds.includes(a.studentId)
+            studentIds.includes(a.studentid)
           );
           const present = gradeAttendance.filter((a) => a.status === "present")
             .length;
@@ -90,7 +90,7 @@ const TeacherGrades = () => {
             : 0;
 
           const gradeUniform = uniformData.filter((u) =>
-            studentIds.includes(u.studentId)
+            studentIds.includes(u.studentid)
           );
           const totalItems = gradeUniform.length * 5;
           const compliant = gradeUniform.reduce(
@@ -246,7 +246,7 @@ const TeacherGrades = () => {
                         <Users className="mr-2 h-5 w-5 text-muted-foreground" />
                         <span>Students</span>
                       </div>
-                      <Link to={`/teacher/students?gradeId=${grade.id}`}>
+                      <Link to={`/teacher/students?gradeid=${grade.id}`}>
                         <Button variant="outline" size="sm">
                           View
                         </Button>
@@ -258,7 +258,7 @@ const TeacherGrades = () => {
                       <ClipboardCheck className="mr-2 h-5 w-5 text-muted-foreground" />
                       <span>Attendance</span>
                     </div>
-                    <Link to={`/teacher/attendance?gradeId=${grade.id}`}>
+                    <Link to={`/teacher/attendance?gradeid=${grade.id}`}>
                       <Button className="group">
                         Take Attendance
                         <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
