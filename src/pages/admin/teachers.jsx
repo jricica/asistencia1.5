@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/Dashboard";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,15 +21,38 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Plus, Trash2, UserPlus } from "lucide-react";
 import { supabase } from "../../../supabaseClient";
-import useTeachers from "@/hooks/use-teachers";
 
 const AdminTeachers = () => {
-  const { teachers, loading, setTeachers } = useTeachers();
-  const [newTeacher, setNewTeacher] = useState({ name: "", email: "", password: "" });
+  const [teachers, setTeachers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [newTeacher, setNewTeacher] = useState({
+    name: "",
+    email: "",
+    password: "",
+    recoveryWord: "",
+  });
   const [isAddingTeacher, setIsAddingTeacher] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
 
+  useEffect(() => {
+    const fetchTeachers = async () => {
+      const { data, error } = await supabase
+        .from("users")
+        .select("id, name, email, createdat")
+        .eq("role", "teacher");
+
+      if (error) {
+        toast({ title: "Error loading teachers", description: error.message, variant: "destructive" });
+      } else {
+        setTeachers(data);
+      }
+
+      setLoading(false);
+    };
+
+    fetchTeachers();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -38,7 +61,9 @@ const AdminTeachers = () => {
 
   const handleAddTeacher = async (e) => {
     e.preventDefault();
-    if (!newTeacher.name || !newTeacher.email || !newTeacher.password) {
+    const { name, email, password, recoveryWord } = newTeacher;
+
+    if (!name || !email || !password || !recoveryWord) {
       toast({
         title: "Error",
         description: "Please fill in all fields.",
@@ -49,20 +74,15 @@ const AdminTeachers = () => {
 
     setIsAddingTeacher(true);
     try {
-      // 1. Crear cuenta en Supabase Auth
-      const { data: authUser, error: signUpError } = await supabase.auth.signUp({
-        email: newTeacher.email,
-        password: newTeacher.password,
-      });
-      if (signUpError) throw signUpError;
-
-      // 2. Guardar en tabla teachers
       const { data: teacherInserted, error: insertError } = await supabase
-        .from("teachers")
+        .from("users")
         .insert({
-          id: authUser.user.id,
-          name: newTeacher.name,
-          email: newTeacher.email,
+          name,
+          email,
+          password,
+          recoveryWord,
+          role: "teacher",
+          createdat: new Date().toISOString(),
         })
         .select()
         .single();
@@ -70,7 +90,7 @@ const AdminTeachers = () => {
       if (insertError) throw insertError;
 
       setTeachers((prev) => [...prev, teacherInserted]);
-      setNewTeacher({ name: "", email: "", password: "" });
+      setNewTeacher({ name: "", email: "", password: "", recoveryWord: "" });
       setIsDialogOpen(false);
 
       toast({
@@ -90,7 +110,7 @@ const AdminTeachers = () => {
 
   const handleDeleteTeacher = async (teacherId) => {
     try {
-      const { error } = await supabase.from("teachers").delete().eq("id", teacherId);
+      const { error } = await supabase.from("users").delete().eq("id", teacherId);
       if (error) throw new Error(error.message);
       setTeachers((prev) => prev.filter((t) => t.id !== teacherId));
       toast({ title: "Success", description: "Teacher deleted successfully." });
@@ -137,6 +157,10 @@ const AdminTeachers = () => {
                     <Label htmlFor="password">Password</Label>
                     <Input id="password" name="password" type="password" value={newTeacher.password} onChange={handleInputChange} required disabled={isAddingTeacher} />
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="recoveryWord">Recovery Word</Label>
+                    <Input id="recoveryWord" name="recoveryWord" value={newTeacher.recoveryWord} onChange={handleInputChange} required disabled={isAddingTeacher} />
+                  </div>
                 </div>
                 <DialogFooter>
                   <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isAddingTeacher}>Cancel</Button>
@@ -179,7 +203,7 @@ const AdminTeachers = () => {
                       <TableRow key={teacher.id}>
                         <TableCell>{teacher.name}</TableCell>
                         <TableCell>{teacher.email}</TableCell>
-                        <TableCell>{new Date(teacher.created_at).toLocaleDateString()}</TableCell>
+                        <TableCell>{new Date(teacher.createdat).toLocaleDateString()}</TableCell>
                         <TableCell className="text-right">
                           <AlertDialog>
                             <AlertDialogTrigger asChild>

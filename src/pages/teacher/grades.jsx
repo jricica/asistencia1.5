@@ -2,12 +2,26 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useUser } from "@/context/UserContext";
 import { DashboardLayout } from "@/components/layout/Dashboard";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { Loader2, Users, ClipboardCheck, BookOpen, School, ArrowRight } from "lucide-react";
+import {
+  Loader2,
+  Users,
+  ClipboardCheck,
+  BookOpen,
+  School,
+  ArrowRight,
+} from "lucide-react";
 import { supabase } from "../../../supabaseClient";
 
 const TeacherGrades = () => {
@@ -22,29 +36,38 @@ const TeacherGrades = () => {
       if (!session) return;
 
       try {
-        const { data: teacherInfo } = await supabase
-          .from('teachers')
-          .select('levelId')
-          .eq('id', session.id)
+        const teacherId = Number(session.id);
+        console.log("Teacher ID:", teacherId); // Depuración
+
+        // Consultar levelId del usuario (teacher) basado en su role
+        const { data: teacherInfo, error: teacherErr } = await supabase
+          .from("users")
+          .select("levelId")
+          .eq("id", teacherId)
+          .eq("role", "teacher")
           .maybeSingle();
 
+        if (teacherErr) throw teacherErr;
+
         const { data: gradesData, error: gradesErr } = await supabase
-          .from('grades')
-          .select('id, name, levelId, teacherId')
-          .eq('teacherId', session.id);
+          .from("grades")
+          .select("id, name, levelId, teacherId")
+          .eq("teacherId", teacherId);
+
+        console.log("Grades Data:", gradesData); // Depuración
         if (gradesErr) throw gradesErr;
 
         const { data: students } = await supabase
-          .from('students')
-          .select('id, gradeId');
+          .from("students")
+          .select("id, gradeId");
 
         const { data: attendanceData } = await supabase
-          .from('attendance')
-          .select('studentId, status');
+          .from("attendance")
+          .select("studentId, status");
 
         const { data: uniformData } = await supabase
-          .from('uniformcompliance')
-          .select('studentId, shoes, shirt, pants, sweater, haircut');
+          .from("uniformcompliance")
+          .select("studentId, shoes, shirt, pants, sweater, haircut");
 
         if (teacherInfo) {
           setTeacherLevel(teacherInfo.levelId);
@@ -52,28 +75,41 @@ const TeacherGrades = () => {
           setTeacherLevel(gradesData[0].levelId);
         }
 
-        const gradeStats = gradesData.map(g => {
-          const gradeStudents = students.filter(s => s.gradeId === g.id);
-          const studentIds = gradeStudents.map(s => s.id);
+        const gradeStats = gradesData.map((g) => {
+          const gradeStudents = students.filter((s) => s.gradeId === g.id);
+          const studentIds = gradeStudents.map((s) => s.id);
           const studentCount = gradeStudents.length;
 
-          const gradeAttendance = attendanceData.filter(a => studentIds.includes(a.studentId));
-          const present = gradeAttendance.filter(a => a.status === 'present').length;
+          const gradeAttendance = attendanceData.filter((a) =>
+            studentIds.includes(a.studentId)
+          );
+          const present = gradeAttendance.filter((a) => a.status === "present")
+            .length;
           const attendanceRate = gradeAttendance.length
             ? Math.round((present / gradeAttendance.length) * 100)
             : 0;
 
-          const gradeUniform = uniformData.filter(u => studentIds.includes(u.studentId));
+          const gradeUniform = uniformData.filter((u) =>
+            studentIds.includes(u.studentId)
+          );
           const totalItems = gradeUniform.length * 5;
-          const compliant = gradeUniform.reduce((acc, u) => acc + [u.shoes, u.shirt, u.pants, u.sweater, u.haircut].filter(Boolean).length, 0);
-          const uniformCompliance = totalItems ? Math.round((compliant / totalItems) * 100) : 0;
+          const compliant = gradeUniform.reduce(
+            (acc, u) =>
+              acc +
+              [u.shoes, u.shirt, u.pants, u.sweater, u.haircut].filter(Boolean)
+                .length,
+            0
+          );
+          const uniformCompliance = totalItems
+            ? Math.round((compliant / totalItems) * 100)
+            : 0;
 
           return { ...g, studentCount, attendanceRate, uniformCompliance };
         });
 
         setGrades(gradeStats);
       } catch (error) {
-        console.error("Error fetching teacher data:", error);
+        console.error("Error fetching teacher data:", error.message);
         toast({
           title: "Error",
           description: "Failed to load grade data. Please try again.",
@@ -92,14 +128,14 @@ const TeacherGrades = () => {
     show: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1
-      }
-    }
+        staggerChildren: 0.1,
+      },
+    },
   };
 
   const item = {
     hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 }
+    show: { opacity: 1, y: 0 },
   };
 
   const getAttendanceColor = (rate) => {
@@ -116,7 +152,7 @@ const TeacherGrades = () => {
 
   return (
     <DashboardLayout>
-      <motion.div 
+      <motion.div
         className="space-y-6"
         variants={container}
         initial="hidden"
@@ -131,14 +167,17 @@ const TeacherGrades = () => {
               </p>
             </div>
             {teacherLevel && (
-              <Badge variant="outline" className="bg-blue-100 text-blue-800 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300">
+              <Badge
+                variant="outline"
+                className="bg-blue-100 text-blue-800 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300"
+              >
                 <School className="mr-2 h-4 w-4" />
                 Level ID: {teacherLevel}
               </Badge>
             )}
           </div>
         </motion.div>
-        
+
         {loading ? (
           <div className="flex h-40 items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -146,8 +185,8 @@ const TeacherGrades = () => {
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {grades.map((grade, index) => (
-              <motion.div 
-                key={grade.id} 
+              <motion.div
+                key={grade.id}
                 variants={item}
                 className="card-hover"
                 initial={{ opacity: 0, y: 20 }}
@@ -161,21 +200,40 @@ const TeacherGrades = () => {
                         <BookOpen className="h-5 w-5 text-primary" />
                         {grade.name}
                       </CardTitle>
-                      <Badge variant="outline" className="bg-white/80 dark:bg-slate-800/80">
+                      <Badge
+                        variant="outline"
+                        className="bg-white/80 dark:bg-slate-800/80"
+                      >
                         {grade.studentCount} students
                       </Badge>
                     </div>
                     <CardDescription>
                       <div className="flex items-center gap-4 mt-2">
                         <div className="flex items-center gap-1">
-                          <ClipboardCheck className={`h-4 w-4 ${getAttendanceColor(grade.attendanceRate)}`} />
-                          <span className={`text-sm font-medium ${getAttendanceColor(grade.attendanceRate)}`}>
+                          <ClipboardCheck
+                            className={`h-4 w-4 ${getAttendanceColor(
+                              grade.attendanceRate
+                            )}`}
+                          />
+                          <span
+                            className={`text-sm font-medium ${getAttendanceColor(
+                              grade.attendanceRate
+                            )}`}
+                          >
                             {grade.attendanceRate}% attendance
                           </span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <Users className={`h-4 w-4 ${getUniformColor(grade.uniformCompliance)}`} />
-                          <span className={`text-sm font-medium ${getUniformColor(grade.uniformCompliance)}`}>
+                          <Users
+                            className={`h-4 w-4 ${getUniformColor(
+                              grade.uniformCompliance
+                            )}`}
+                          />
+                          <span
+                            className={`text-sm font-medium ${getUniformColor(
+                              grade.uniformCompliance
+                            )}`}
+                          >
                             {grade.uniformCompliance}% uniform
                           </span>
                         </div>

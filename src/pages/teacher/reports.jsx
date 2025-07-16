@@ -41,15 +41,18 @@ const TeacherReports = () => {
         if (studentsErr) throw studentsErr;
 
         const { data: reportsData, error: reportsErr } = await supabase
-          .from("reports")
-          .select("id, studentId, type, report, date, students(name)")
+  .from("reports")
+  .select("id, studentId, type, report, date, students(name)")
+
+
+
           .order("date", { ascending: false });
         if (reportsErr) throw reportsErr;
 
         const formatted = reportsData.map((r) => ({
           id: r.id,
           studentId: r.studentId,
-          studentName: r.students?.name || "Unknown",
+          studentName: inserted.students?.name || "Unknown",
           type: r.type,
           subject: r.report.split("\n")[0],
           message: r.report.split("\n").slice(1).join("\n"),
@@ -133,18 +136,27 @@ const TeacherReports = () => {
       
       setSending(true);
       
-      const { data: inserted, error } = await supabase
-        .from("reports")
-        .insert({
-          studentId:
-            selectedStudent !== "default" && selectedStudent !== "all"
-              ? parseInt(selectedStudent)
-              : null,
-          type: emailForm.type,
-          report: `${emailForm.subject}\n${emailForm.message}`,
-          sentBy: "teacher",
-        })
+ const studentIdValue = 
+  selectedStudent !== "default" && selectedStudent !== "all" 
+    ? Number(selectedStudent) 
+    : null;
+
+if (selectedStudent !== "default" && selectedStudent !== "all" && isNaN(studentIdValue)) {
+  throw new Error("Invalid student ID");
+}
+
+const { data: inserted, error } = await supabase
+  .from("reports")
+  .insert({
+    studentId: studentIdValue,
+    type: emailForm.type,
+    report: `${emailForm.subject}\n${emailForm.message}`,
+    sentBy: "teacher",
+  })
+
         .select("id, studentId, type, report, date, students(name)")
+
+
         .single();
       if (error) throw error;
       const newReport = {
