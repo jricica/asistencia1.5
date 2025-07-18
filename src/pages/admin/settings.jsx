@@ -64,7 +64,10 @@ const AdminSettings = () => {
         { key: 'attendanceStartTime', value: settings.attendanceStartTime },
         { key: 'attendanceEndTime', value: settings.attendanceEndTime },
       ];
-      const { error } = await supabase.from('settings').upsert(updates);
+          const { error } = await supabase
+      .from('settings')
+      .upsert(updates, { onConflict: ['key'] });
+
       if (error) throw error;
 
       toast({
